@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jellyfin Redesign Concept — Batman Beyond</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1c1c1c;
+    --card: #222;
+    --text: #fff;
+    --muted: #a3a3a3;
+    --dim: #6b6b6b;
+    --accent: #e50914;
+    --play: #fff;
+    --play-fg: #0a0a0a;
+    --rating-bg: #2a2a2a;
+    --badge: #3a3a3a;
+    --frame: #1a1a1a;
+    --frame-border: #333;
+    --safe: 16px;
+    --radius: 10px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: #111;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 28px 16px 64px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-label {
+    max-width: 412px;
+    margin: 0 auto 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+  }
+
+  .divider {
+    max-width: 412px;
+    margin: 48px auto 28px;
+    text-align: center;
+  }
+  .divider hr {
+    border: none;
+    border-top: 1px solid #333;
+    margin-bottom: 12px;
+  }
+  .divider span {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #777;
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 412px;
+    max-width: 100%;
+    margin: 0 auto;
+    background: var(--bg);
+    border-radius: 36px;
+    border: 2px solid var(--frame-border);
+    box-shadow:
+      0 0 0 8px var(--frame),
+      0 24px 64px rgba(0,0,0,0.55);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .status-bar {
+    height: 28px;
+    padding: 8px 22px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ddd;
+    background: transparent;
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .status-bar .icons { display: flex; gap: 5px; align-items: center; }
+  .status-bar .sig {
+    width: 14px; height: 10px;
+    background: linear-gradient(90deg, #ddd 0 20%, #ddd 25% 45%, #ddd 50% 70%, #666 75% 100%);
+    border-radius: 1px;
+  }
+  .status-bar .wifi {
+    width: 12px; height: 10px;
+    border: 2px solid #ddd;
+    border-radius: 50% 50% 0 0;
+    border-bottom: none;
+    transform: scaleY(0.85);
+  }
+  .status-bar .bat {
+    width: 22px; height: 10px;
+    border: 1.5px solid #ddd;
+    border-radius: 2px;
+    position: relative;
+  }
+  .status-bar .bat::after {
+    content: "";
+    position: absolute;
+    inset: 1.5px;
+    background: #ddd;
+    border-radius: 1px;
+    width: 70%;
+  }
+
+  .screen {
+    min-height: 780px;
+    background: var(--bg);
+    position: relative;
+  }
+
+  /* ——— Shared chrome ——— */
+  .nav {
+    position: absolute;
+    top: 28px;
+    left: 0; right: 0;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px var(--safe);
+  }
+  .nav-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(8px);
+    border: none;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .nav-btn svg { width: 18px; height: 18px; fill: currentColor; }
+  .nav-right { display: flex; gap: 8px; }
+
+  /* ——— SCREEN A: Show detail ——— */
+  .hero {
+    position: relative;
+    height: 260px;
+    background:
+      linear-gradient(180deg, rgba(10,10,10,0) 35%, rgba(10,10,10,0.75) 72%, #0a0a0a 100%),
+      linear-gradient(135deg, #0b1a3a 0%, #12305c 35%, #1a4a7a 55%, #0d2848 75%, #06101f 100%);
+    overflow: hidden;
+  }
+  .hero::before {
+    /* stylized city / bat silhouette via CSS */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 70% 40%, rgba(80,160,255,0.35), transparent 60%),
+      radial-gradient(ellipse 40% 30% at 30% 60%, rgba(40,100,200,0.25), transparent 50%);
+  }
+  .hero-art {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 48px;
+  }
+  .hero-art svg { width: 100%; height: 100%; opacity: 0.9; }
+  .hero-progress {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.2);
+  }
+  .hero-progress > i {
+    display: block;
+    width: 38%;
+    height: 100%;
+    background: var(--accent);
+  }
+
+  .detail {
+    padding: 4px var(--safe) 28px;
+  }
+
+  .title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .meta .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: var(--badge);
+    color: #e5e5e5;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .meta .box {
+    border: 1px solid #666;
+    border-radius: 2px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #ccc;
+  }
+  .meta .star { color: #f5c518; }
+  .meta .star span { color: var(--muted); margin-left: 2px; }
+
+  /* Primary Play — Netflix pill */
+  .btn-play {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 48px;
+    border: none;
+    border-radius: 6px;
+    background: var(--play);
+    color: var(--play-fg);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .btn-play svg { width: 18px; height: 18px; fill: currentColor; }
+
+  .actions-secondary {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .btn-ghost {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 44px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    border: none;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .btn-ghost svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+  .btn-ghost.filled svg { fill: var(--accent); stroke: var(--accent); }
+  .btn-ghost.overflow svg { fill: currentColor; stroke: none; }
+
+  .synopsis {
+    font-size: 14px;
+    line-height: 1.45;
+    color: #d4d4d4;
+    margin-bottom: 20px;
+  }
+  .synopsis .clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+  .synopsis.expanded .clamp {
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+  .synopsis .more {
+    display: inline;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 4px;
+  }
+  .synopsis .more:hover { color: #fff; }
+
+  .section { margin-bottom: 22px; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .section-head h2 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .section-head .see {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  /* Next Up card */
+  .next-card {
+    display: flex;
+    gap: 12px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .next-thumb {
+    position: relative;
+    width: 148px;
+    flex-shrink: 0;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(145deg, #1a3058, #0e1c36 50%, #243d6e);
+  }
+  .next-thumb .play-circle {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+  .next-thumb .play-circle span {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.92);
+    display: grid;
+    place-items: center;
+  }
+  .next-thumb .play-circle span svg {
+    width: 14px; height: 14px;
+    fill: #111;
+    margin-left: 2px;
+  }
+  .next-thumb .bar {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.25);
+  }
+  .next-thumb .bar i {
+    display: block;
+    width: 38%;
+    height: 100%;
+    background: var(--accent);
+  }
+  .next-info {
+    padding: 10px 12px 10px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+  .next-info .ep {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .next-info .runtime {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .next-info .desc {
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  /* Seasons row */
+  .seasons-row {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .seasons-row::-webkit-scrollbar { display: none; }
+  .season-card {
+    flex: 0 0 110px;
+    cursor: pointer;
+  }
+  .season-poster {
+    position: relative;
+    width: 110px;
+    aspect-ratio: 2 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(160deg, #1e3a6e, #0a1628 60%, #152848);
+    margin-bottom: 6px;
+  }
+  .season-poster.s2 {
+    background: linear-gradient(160deg, #2a1a4a, #0c0a1a 55%, #1a2848);
+  }
+  .season-poster.s3 {
+    background: linear-gradient(160deg, #1a2840, #061018 55%, #243050);
+  }
+  .season-poster .badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .season-poster .label-overlay {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 28px 8px 8px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .season-card .sub {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ——— SCREEN B: Season / episodes ——— */
+  .season-top {
+    padding: 36px var(--safe) 0;
+    background: var(--bg);
+  }
+  .season-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .season-nav .back {
+    width: 36px; height: 36px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .season-nav .back svg { width: 22px; height: 22px; fill: currentColor; }
+  .season-nav .show-title {
+    font-size: 15px;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 8px;
+  }
+  .season-nav .nav-icons {
+    display: flex;
+    gap: 4px;
+  }
+  .season-nav .nav-icons button {
+    width: 36px; height: 36px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .season-nav .nav-icons svg { width: 20px; height: 20px; fill: currentColor; }
+
+  .tabs {
+    display: flex;
+    gap: 20px;
+    border-bottom: 1px solid #222;
+    margin: 0 calc(-1 * var(--safe));
+    padding: 0 var(--safe);
+  }
+  .tab {
+    background: none;
+    border: none;
+    color: var(--dim);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 10px 0 12px;
+    cursor: pointer;
+    position: relative;
+  }
+  .tab.active {
+    color: #fff;
+  }
+  .tab.active::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 3px;
+    background: #fff;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .season-picker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 8px;
+  }
+  .season-picker .picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .season-picker .picker svg {
+    width: 14px; height: 14px;
+    fill: currentColor;
+  }
+  .season-picker .count {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .ep-list {
+    padding: 4px var(--safe) 32px;
+  }
+  .ep-row {
+    padding: 14px 0;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .ep-row:last-child { border-bottom: none; }
+
+  .ep-top {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .ep-thumb {
+    position: relative;
+    width: 140px;
+    flex-shrink: 0;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a3058, #0e2040);
+  }
+  .ep-thumb.e2 { background: linear-gradient(135deg, #243868, #122038); }
+  .ep-thumb.e3 { background: linear-gradient(135deg, #1a2848, #0a1020 60%, #2a1830); }
+  .ep-thumb .play-circle {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+  .ep-thumb .play-circle span {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.92);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .ep-thumb .play-circle span svg {
+    width: 13px; height: 13px;
+    fill: #111;
+    margin-left: 2px;
+  }
+  .ep-thumb .watched {
+    position: absolute;
+    top: 5px; right: 5px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.65);
+    display: grid;
+    place-items: center;
+  }
+  .ep-thumb .watched svg {
+    width: 11px; height: 11px;
+    fill: #fff;
+  }
+  .ep-thumb .progress {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.2);
+  }
+  .ep-thumb .progress i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+  }
+
+  .ep-meta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    padding-right: 28px;
+  }
+  .ep-meta .ep-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  .ep-meta .ep-runtime {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .ep-meta .overflow {
+    position: absolute;
+    top: 0; right: -4px;
+    width: 28px; height: 28px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .ep-meta .overflow svg { width: 16px; height: 16px; fill: currentColor; }
+
+  .ep-desc {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--muted);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .tab-placeholder {
+    padding: 40px 8px;
+    text-align: center;
+    color: var(--dim);
+    font-size: 14px;
+  }
+
+  .footer-note {
+    max-width: 412px;
+    margin: 20px auto 0;
+    font-size: 11px;
+    color: #555;
+    text-align: center;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+  <p class="page-label">Screen A — TV Show detail</p>
+  <div class="phone" id="screen-a">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons"><div class="sig"></div><div class="wifi"></div><div class="bat"></div></div>
+    </div>
+    <div class="screen">
+      <div class="hero">
+        <div class="hero-art" aria-hidden="true">
+          <!-- Inline SVG: futuristic city + bat silhouette -->
+          <svg viewBox="0 0 412 260" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0d2244"/>
+                <stop offset="55%" stop-color="#163a68"/>
+                <stop offset="100%" stop-color="#0a1428"/>
+              </linearGradient>
+              <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#4aa3ff" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#1a4a8a" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <rect width="412" height="260" fill="url(#sky)"/>
+            <ellipse cx="280" cy="90" rx="140" ry="70" fill="url(#glow)"/>
+            <!-- skyline -->
+            <g fill="#0a1628" opacity="0.85">
+              <rect x="0" y="140" width="40" height="120"/>
+              <rect x="36" y="110" width="28" height="150"/>
+              <rect x="60" y="155" width="22" height="105"/>
+              <rect x="78" y="125" width="35" height="135"/>
+              <rect x="110" y="145" width="20" height="115"/>
+              <rect x="128" y="100" width="45" height="160"/>
+              <rect x="168" y="130" width="25" height="130"/>
+              <rect x="190" y="115" width="40" height="145"/>
+              <rect x="228" y="150" width="18" height="110"/>
+              <rect x="244" y="95" width="50" height="165"/>
+              <rect x="290" y="135" width="30" height="125"/>
+              <rect x="316" y="110" width="38" height="150"/>
+              <rect x="350" y="145" width="25" height="115"/>
+              <rect x="372" y="120" width="40" height="140"/>
+            </g>
+            <!-- window lights -->
+            <g fill="#6ec0ff" opacity="0.35">
+              <rect x="42" y="130" width="4" height="5"/><rect x="50" y="145" width="4" height="5"/>
+              <rect x="135" y="120" width="4" height="5"/><rect x="145" y="140" width="4" height="5"/>
+              <rect x="255" y="115" width="4" height="5"/><rect x="265" y="135" width="4" height="5"/>
+              <rect x="325" y="130" width="4" height="5"/><rect x="335" y="155" width="4" height="5"/>
+            </g>
+            <!-- bat silhouette -->
+            <g transform="translate(206,95) scale(1.15)" fill="#050a14" opacity="0.92">
+              <path d="M0,-8 C4,-18 14,-22 22,-18 C18,-10 14,-4 18,2 C28,-6 40,-4 46,4 C36,2 28,8 24,16 C16,8 8,6 0,12 C-8,6 -16,8 -24,16 C-28,8 -36,2 -46,4 C-40,-4 -28,-6 -18,2 C-14,-4 -18,-10 -22,-18 C-14,-22 -4,-18 0,-8 Z"/>
+            </g>
+          </svg>
+        </div>
+        <div class="nav">
+          <button class="nav-btn" aria-label="Back">
+            <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+          </button>
+          <div class="nav-right">
+            <button class="nav-btn" aria-label="Cast">
+              <svg viewBox="0 0 24 24"><path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zM21 3H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="hero-progress"><i></i></div>
+      </div>
+
+      <div class="detail">
+        <h1 class="title">Batman Beyond</h1>
+        <div class="meta">
+          <span>1999 – 2001</span>
+          <span class="pill">TV-Y7</span>
+          <span>3 Seasons</span>
+          <span class="star">★ <span>8.2</span></span>
+          <span class="box">HD</span>
+        </div>
+
+        <!-- FIX 1: Play primary; only Favorite + overflow. No shuffle / checkmark. -->
+        <button class="btn-play" type="button">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Resume S1:E3
+        </button>
+        <div class="actions-secondary">
+          <button class="btn-ghost filled" type="button" aria-label="Favorite">
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          </button>
+          <button class="btn-ghost overflow" type="button" aria-label="More">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+        </div>
+
+        <!-- FIX 5: working expand/collapse -->
+        <div class="synopsis" id="synopsis">
+          <span class="clamp" id="synopsis-text">As new villains overrun Gotham City of the future, the aging Bruce Wayne hangs up the cape of the once invincible Batman. But when troubled teenager Terry McGinnis stumbles upon the Batcave, a new partnership is forged — and a new Batman is born.</span>
+          <button class="more" type="button" id="synopsis-toggle" aria-expanded="false">Show more</button>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2>Next Up</h2>
+          </div>
+          <div class="next-card">
+            <div class="next-thumb">
+              <div class="play-circle"><span>
+                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </span></div>
+              <div class="bar"><i></i></div>
+            </div>
+            <div class="next-info">
+              <div class="ep">S1:E3 · Black Out</div>
+              <div class="runtime">21m · 8m left</div>
+              <div class="desc">Infiltrator virus threatens Wayne-Powers. Terry faces his first real test as Batman.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <h2>Seasons</h2>
+            <span class="see">3</span>
+          </div>
+          <div class="seasons-row">
+            <div class="season-card">
+              <div class="season-poster">
+                <span class="badge">13 ep</span>
+                <div class="label-overlay">S1</div>
+              </div>
+              <div class="sub">Season 1</div>
+            </div>
+            <div class="season-card">
+              <div class="season-poster s2">
+                <span class="badge">20 ep</span>
+                <div class="label-overlay">S2</div>
+              </div>
+              <div class="sub">Season 2</div>
+            </div>
+            <div class="season-card">
+              <div class="season-poster s3">
+                <span class="badge">13 ep</span>
+                <div class="label-overlay">S3</div>
+              </div>
+              <div class="sub">Season 3</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">
+    <hr />
+    <span>Screen B — Season / episode list</span>
+  </div>
+
+  <p class="page-label">Screen B — Season 1 episodes</p>
+  <div class="phone" id="screen-b">
+    <div class="status-bar" style="position:relative;background:var(--bg);">
+      <span>9:41</span>
+      <div class="icons"><div class="sig"></div><div class="wifi"></div><div class="bat"></div></div>
+    </div>
+    <div class="screen" style="min-height:720px;">
+      <div class="season-top">
+        <div class="season-nav">
+          <button class="back" aria-label="Back">
+            <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+          </button>
+          <div class="show-title">Batman Beyond</div>
+          <div class="nav-icons">
+            <button aria-label="Cast">
+              <svg viewBox="0 0 24 24"><path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zM21 3H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="tabs" role="tablist">
+          <button class="tab active" type="button" data-tab="episodes" role="tab" aria-selected="true">Episodes</button>
+          <button class="tab" type="button" data-tab="suggested" role="tab" aria-selected="false">Suggested</button>
+          <button class="tab" type="button" data-tab="extras" role="tab" aria-selected="false">Extras</button>
+        </div>
+
+        <div class="season-picker">
+          <button class="picker" type="button">
+            Season 1
+            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          </button>
+          <span class="count">13 episodes</span>
+        </div>
+      </div>
+
+      <div class="ep-list">
+        <div class="tab-panel active" id="panel-episodes">
+          <!-- Episode 1 — watched -->
+          <article class="ep-row">
+            <div class="ep-top">
+              <div class="ep-thumb">
+                <div class="play-circle"><span>
+                  <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </span></div>
+                <div class="watched" aria-label="Watched">
+                  <svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                </div>
+              </div>
+              <div class="ep-meta">
+                <div class="ep-title">1. Rebirth (1)</div>
+                <div class="ep-runtime">22m</div>
+                <button class="overflow" type="button" aria-label="More">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="ep-desc">Decades after Batman’s retirement, a teenage Terry McGinnis becomes entangled with an aging Bruce Wayne when a street gang attacks his family.</p>
+          </article>
+
+          <!-- Episode 2 — watched -->
+          <article class="ep-row">
+            <div class="ep-top">
+              <div class="ep-thumb e2">
+                <div class="play-circle"><span>
+                  <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </span></div>
+                <div class="watched" aria-label="Watched">
+                  <svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                </div>
+              </div>
+              <div class="ep-meta">
+                <div class="ep-title">2. Rebirth (2)</div>
+                <div class="ep-runtime">21m</div>
+                <button class="overflow" type="button" aria-label="More">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="ep-desc">Terry dons the Batsuit for the first time to stop Derek Powers’ deadly plans — and a new Batman is born over Neo-Gotham.</p>
+          </article>
+
+          <!-- Episode 3 — in progress -->
+          <article class="ep-row">
+            <div class="ep-top">
+              <div class="ep-thumb e3">
+                <div class="play-circle"><span>
+                  <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </span></div>
+                <div class="progress"><i style="width:38%"></i></div>
+              </div>
+              <div class="ep-meta">
+                <div class="ep-title">3. Black Out</div>
+                <div class="ep-runtime">21m</div>
+                <button class="overflow" type="button" aria-label="More">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="ep-desc">An infiltrator virus designed by Inque threatens Wayne-Powers. Terry faces his first real test as the new Batman.</p>
+          </article>
+        </div>
+
+        <div class="tab-panel" id="panel-suggested">
+          <div class="tab-placeholder">Suggested titles would appear here.</div>
+        </div>
+        <div class="tab-panel" id="panel-extras">
+          <div class="tab-placeholder">Special features &amp; extras.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-note">Concept mockup · no network assets · placeholder art only</p>
+
+<script>
+  // Synopsis expand/collapse (Screen A)
+  (function () {
+    var box = document.getElementById("synopsis");
+    var btn = document.getElementById("synopsis-toggle");
+    if (!btn || !box) return;
+    btn.addEventListener("click", function () {
+      var open = box.classList.toggle("expanded");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.textContent = open ? "Show less" : "Show more";
+    });
+  })();
+
+  // Tabs (Screen B)
+  (function () {
+    var tabs = document.querySelectorAll(".tab");
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        var id = tab.getAttribute("data-tab");
+        tabs.forEach(function (t) {
+          t.classList.toggle("active", t === tab);
+          t.setAttribute("aria-selected", t === tab ? "true" : "false");
+        });
+        document.querySelectorAll(".tab-panel").forEach(function (p) {
+          p.classList.toggle("active", p.id === "panel-" + id);
+        });
+      });
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jellyfin Kids — Batman Beyond Concept</title>
+  <style>
+    :root {
+      --ink: #07090b;
+      --panel: #101419;
+      --panel-2: #171c22;
+      --text: #f7f9fb;
+      --muted: #aab2bc;
+      --line: rgba(255,255,255,.1);
+      --acid: #d9ff43;
+      --cyan: #4bdfff;
+      --red: #ff3158;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { background: #11151a; color-scheme: dark; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 8%, rgba(31,108,147,.22), transparent 23rem),
+        radial-gradient(circle at 85% 55%, rgba(217,255,67,.07), transparent 30rem),
+        #11151a;
+      font-family: ui-rounded, "SF Pro Rounded", "Avenir Next", system-ui, sans-serif;
+    }
+    button { font: inherit; }
+    .gallery { padding: 32px 16px 64px; }
+    .concept-head { max-width: 412px; margin: 0 auto 18px; }
+    .concept-head small, .divider small { color: var(--acid); font-size: 11px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+    .concept-head h1 { margin: 6px 0 0; font-size: 22px; letter-spacing: -.03em; }
+    .phone {
+      width: min(100%, 412px);
+      height: 866px;
+      margin: auto;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 38px;
+      background: var(--ink);
+      box-shadow: 0 30px 80px rgba(0,0,0,.5), inset 0 0 0 5px #050607;
+    }
+    .screen { height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+    .screen::-webkit-scrollbar { display: none; }
+    .status {
+      position: absolute; z-index: 20; left: 0; right: 0; top: 0;
+      height: 34px; padding: 13px 22px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; font-weight: 800; pointer-events: none;
+      text-shadow: 0 1px 5px #000;
+    }
+    .signals { letter-spacing: 1px; }
+    .hero {
+      position: relative; height: 360px; overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(2,6,10,.08) 0%, rgba(4,7,11,.06) 48%, #07090b 100%),
+        radial-gradient(circle at 73% 29%, rgba(75,223,255,.68), transparent 5%),
+        radial-gradient(ellipse at 70% 40%, rgba(20,103,176,.9), transparent 31%),
+        linear-gradient(125deg, #06101c 18%, #0b3860 50%, #09111c 80%);
+    }
+    .hero::before {
+      content: ""; position: absolute; inset: 65px -20px 48px 45%;
+      background: linear-gradient(135deg, transparent 0 30%, rgba(4,8,15,.92) 31% 55%, transparent 56%),
+                  linear-gradient(45deg, transparent 0 39%, rgba(255,49,88,.9) 40% 48%, transparent 49%);
+      transform: rotate(-8deg); filter: drop-shadow(0 8px 5px rgba(0,0,0,.55));
+      clip-path: polygon(50% 0, 63% 31%, 96% 18%, 73% 49%, 100% 70%, 62% 65%, 52% 100%, 41% 66%, 2% 78%, 31% 50%, 7% 25%, 39% 33%);
+    }
+    .city { position: absolute; inset: auto 0 64px; height: 110px; opacity: .78; background: repeating-linear-gradient(90deg, #06121e 0 28px, transparent 28px 34px); clip-path: polygon(0 42%,8% 42%,8% 4%,17% 4%,17% 58%,28% 58%,28% 22%,35% 22%,35% 68%,47% 68%,47% 9%,57% 9%,57% 53%,69% 53%,69% 28%,79% 28%,79% 64%,90% 64%,90% 16%,100% 16%,100% 100%,0 100%); }
+    .topbar { position: absolute; z-index: 4; top: 38px; left: 16px; right: 16px; display: flex; justify-content: space-between; }
+    .circle-btn {
+      width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.1); border-radius: 50%;
+      display: grid; place-items: center; color: white; background: rgba(4,8,12,.6); backdrop-filter: blur(12px);
+      font-size: 22px; cursor: pointer;
+    }
+    .hero-copy { position: absolute; z-index: 3; left: 20px; right: 20px; bottom: 14px; }
+    .eyebrow { color: var(--acid); font-size: 11px; font-weight: 900; letter-spacing: .17em; text-transform: uppercase; }
+    .hero h2 { margin: 5px 0 8px; max-width: 330px; font-size: 39px; line-height: .95; letter-spacing: -.055em; text-transform: uppercase; font-style: italic; text-shadow: 0 5px 24px #000; }
+    .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: #d6dce2; font-size: 13px; font-weight: 650; }
+    .badge { padding: 3px 7px; border: 1px solid rgba(255,255,255,.35); border-radius: 6px; color: white; font-size: 11px; }
+    .star { color: var(--acid); }
+    .detail-body { padding: 10px 18px 36px; }
+    .actions { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; }
+    .play-primary {
+      flex: 1; min-height: 51px; border: 0; border-radius: 999px; padding: 0 24px;
+      display: flex; justify-content: center; align-items: center; gap: 10px;
+      color: #080b0d; background: var(--acid); font-weight: 900; font-size: 16px; cursor: pointer;
+      box-shadow: 0 8px 26px rgba(217,255,67,.2);
+    }
+    .play-primary:active { transform: scale(.98); }
+    .action-icon { width: 49px; height: 49px; border: 1px solid var(--line); border-radius: 50%; color: white; background: var(--panel-2); font-size: 21px; cursor: pointer; }
+    .synopsis { color: #c4cbd2; font-size: 14px; line-height: 1.47; }
+    .synopsis p { margin: 0; }
+    .synopsis p.collapsed { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .more { margin: 3px 0 0; padding: 4px 0; border: 0; color: white; background: transparent; font-size: 12px; font-weight: 850; cursor: pointer; }
+    .section-title { margin: 17px 0 9px; display: flex; align-items: end; justify-content: space-between; }
+    .section-title h3 { margin: 0; font-size: 19px; letter-spacing: -.02em; }
+    .section-title a { color: var(--muted); font-size: 12px; text-decoration: none; }
+    .next-card { display: grid; grid-template-columns: 145px 1fr; gap: 12px; padding: 10px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(145deg, #161c23, #0e1216); }
+    .thumb { position: relative; overflow: hidden; aspect-ratio: 16/9; border-radius: 12px; background: linear-gradient(135deg, #281444, #15618a 45%, #070b11 46% 67%, #d22549 68%); }
+    .thumb::before { content:""; position:absolute; width:55%; height:130%; right:4%; top:-18%; background:#080c14; transform:rotate(18deg); clip-path:polygon(45% 0,63% 34%,100% 45%,67% 60%,57% 100%,39% 68%,0 58%,34% 38%); }
+    .play-dot { position: absolute; inset: 50% auto auto 50%; transform: translate(-50%,-50%); width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; padding-left: 2px; color: #050607; background: rgba(255,255,255,.94); box-shadow: 0 4px 14px rgba(0,0,0,.35); font-size: 14px; }
+    .progress { position: absolute; inset: auto 0 0; height: 3px; background: rgba(255,255,255,.2); }
+    .progress::before { content:""; display:block; width:42%; height:100%; background:var(--acid); }
+    .next-copy { min-width: 0; align-self: center; }
+    .next-copy b { display:block; font-size: 14px; line-height: 1.25; }
+    .next-copy small { display:block; margin-top:5px; color:var(--muted); font-size:12px; }
+    .resume { margin-top: 8px; color: var(--acid); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .season-row { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+    .season-card { flex:0 0 112px; min-height:86px; padding:13px; border:1px solid var(--line); border-radius:16px; background:radial-gradient(circle at 80% 10%, rgba(75,223,255,.2), transparent 38%), #14191f; }
+    .season-card.active { border-color: rgba(217,255,67,.75); background:linear-gradient(145deg, rgba(217,255,67,.13), #14191f 55%); }
+    .season-card b { display:block; font-size:14px; }
+    .season-card small { display:block; margin-top:18px; color:var(--muted); font-size:11px; }
+    .divider { width:min(100%, 412px); margin:38px auto 18px; display:flex; align-items:center; gap:12px; }
+    .divider::before, .divider::after { content:""; height:1px; flex:1; background:rgba(255,255,255,.16); }
+
+    /* Season screen */
+    .season-hero { height: 218px; position: relative; overflow: hidden; background: linear-gradient(180deg, transparent 30%, #07090b 100%), linear-gradient(120deg, #32102b, #153e6a 55%, #07090b); }
+    .season-hero::before { content:""; position:absolute; inset:20px 30px -40px 100px; background:linear-gradient(130deg,#070a10 35%,#d92d50 36% 43%,#090d13 44%); transform:rotate(7deg); clip-path:polygon(45% 0,65% 33%,100% 46%,67% 60%,55% 100%,40% 67%,0 55%,33% 35%); filter:drop-shadow(0 8px 15px #000); }
+    .season-hero-copy { position:absolute; z-index:2; left:18px; right:18px; bottom:14px; }
+    .season-hero h2 { margin:4px 0 0; font-size:27px; line-height:1.05; letter-spacing:-.04em; }
+    .tabs { position:sticky; z-index:9; top:0; display:flex; gap:24px; padding:0 18px; background:rgba(7,9,11,.93); backdrop-filter:blur(14px); border-bottom:1px solid var(--line); }
+    .tab { position:relative; padding:15px 0 13px; border:0; color:#929aa5; background:transparent; font-size:12px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; }
+    .tab.active { color:white; }
+    .tab.active::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:3px; border-radius:3px 3px 0 0; background:var(--acid); }
+    .episodes { padding:15px 16px 35px; }
+    .season-picker { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+    .season-picker button { border:1px solid var(--line); border-radius:999px; padding:10px 14px; color:white; background:var(--panel-2); font-weight:800; }
+    .season-picker span { color:var(--muted); font-size:12px; }
+    .episode { padding:0 0 17px; margin-bottom:17px; border-bottom:1px solid var(--line); }
+    .episode:last-child { border-bottom:0; }
+    .episode-top { display:grid; grid-template-columns:138px 1fr 26px; gap:11px; align-items:center; }
+    .ep-info { min-width:0; }
+    .ep-info h3 { margin:0; font-size:15px; line-height:1.25; letter-spacing:-.01em; }
+    .runtime { margin-top:6px; color:var(--muted); font-size:12px; }
+    .overflow { border:0; padding:8px 0; color:#cbd1d7; background:transparent; font-size:22px; cursor:pointer; }
+    .description { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; margin:9px 2px 0; color:#aeb6bf; font-size:13px; line-height:1.45; }
+    .watched { position:absolute; top:7px; right:7px; width:20px; height:20px; border-radius:50%; display:grid; place-items:center; color:#07100a; background:var(--acid); font-size:11px; font-weight:1000; }
+    .ep2 { background:linear-gradient(140deg,#0f2339,#193b5c 44%,#080b10 45% 68%,#cf2848 69%); }
+    .ep3 { background:linear-gradient(140deg,#39223b,#334c6a 44%,#080b10 45% 72%,#3aa6d5 73%); }
+    .home-indicator { position:absolute; z-index:30; bottom:7px; left:50%; width:126px; height:5px; border-radius:8px; transform:translateX(-50%); background:rgba(255,255,255,.88); pointer-events:none; }
+    @media (max-width: 450px) { .gallery { padding:0 0 48px; } .concept-head, .divider { padding-left:16px; padding-right:16px; } .phone { border-radius:0; border-left:0; border-right:0; } }
+    @media (prefers-reduced-motion: no-preference) { .phone { animation: rise .6s ease both; } @keyframes rise { from { opacity:0; transform:translateY(12px); } } }
+  </style>
+</head>
+<body>
+  <main class="gallery">
+    <header class="concept-head"><small>Jellyfin Kids Concept</small><h1>Fast to the story. Big on adventure.</h1></header>
+
+    <section class="phone" aria-label="TV show detail page concept">
+      <div class="status"><span>9:41</span><span class="signals">● ◒ ▰</span></div>
+      <div class="screen">
+        <header class="hero">
+          <div class="city"></div>
+          <nav class="topbar" aria-label="Page navigation">
+            <button class="circle-btn" aria-label="Go back">‹</button>
+            <button class="circle-btn" aria-label="Cast to a device">▱</button>
+          </nav>
+          <div class="hero-copy">
+            <div class="eyebrow">Tomorrow’s Gotham</div>
+            <h2>Batman<br>Beyond</h2>
+            <div class="meta"><span>1999–2001</span><span class="badge">TV-Y7</span><span>3 Seasons</span><span class="star">★ 8.2</span></div>
+          </div>
+        </header>
+        <div class="detail-body">
+          <div class="actions">
+            <button class="play-primary" aria-label="Play Batman Beyond"><span>▶</span> Play</button>
+            <button class="action-icon" aria-label="Add to favorites">♡</button>
+            <button class="action-icon" aria-label="More options">⋯</button>
+          </div>
+          <div class="synopsis">
+            <p id="synopsis" class="collapsed">In a futuristic Gotham, teenager Terry McGinnis discovers Bruce Wayne’s secret and becomes a new kind of Batman—faster, fearless, and ready for whatever the city throws at him.</p>
+            <button id="synopsisToggle" class="more" aria-expanded="false" aria-controls="synopsis">Show more</button>
+          </div>
+          <div class="section-title"><h3>Continue watching</h3><a href="#">All episodes</a></div>
+          <article class="next-card">
+            <div class="thumb"><span class="play-dot">▶</span><span class="progress"></span></div>
+            <div class="next-copy"><b>S1:E3 · Black Out</b><small>21 min · 12 min left</small><div class="resume">▶ Resume</div></div>
+          </article>
+          <div class="section-title"><h3>Seasons</h3><a href="#">See all</a></div>
+          <div class="season-row" aria-label="Seasons">
+            <article class="season-card active"><b>Season 1</b><small>13 episodes</small></article>
+            <article class="season-card"><b>Season 2</b><small>26 episodes</small></article>
+            <article class="season-card"><b>Season 3</b><small>13 episodes</small></article>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </section>
+
+    <div class="divider"><small>Screen B · Season 1</small></div>
+
+    <section class="phone" aria-label="Season episode list page concept">
+      <div class="status"><span>9:41</span><span class="signals">● ◒ ▰</span></div>
+      <div class="screen">
+        <header class="season-hero">
+          <nav class="topbar" aria-label="Page navigation">
+            <button class="circle-btn" aria-label="Go back">‹</button>
+            <button class="circle-btn" aria-label="Cast to a device">▱</button>
+          </nav>
+          <div class="season-hero-copy"><div class="eyebrow">Batman Beyond</div><h2>Season 1</h2></div>
+        </header>
+        <nav class="tabs" aria-label="Show sections">
+          <button class="tab active">Episodes</button><button class="tab">Suggested</button><button class="tab">Extras</button>
+        </nav>
+        <section class="episodes">
+          <div class="season-picker"><button>Season 1⌄</button><span>13 episodes</span></div>
+          <article class="episode">
+            <div class="episode-top">
+              <div class="thumb"><span class="play-dot">▶</span><span class="watched">✓</span></div>
+              <div class="ep-info"><h3>1. Rebirth (1)</h3><div class="runtime">21 min</div></div>
+              <button class="overflow" aria-label="More options for Rebirth part 1">⋮</button>
+            </div>
+            <p class="description">Bruce Wayne’s last night as Batman changes Gotham forever. Years later, a brave teenager discovers the secret hidden inside Wayne Manor.</p>
+          </article>
+          <article class="episode">
+            <div class="episode-top">
+              <div class="thumb ep2"><span class="play-dot">▶</span></div>
+              <div class="ep-info"><h3>2. Rebirth (2)</h3><div class="runtime">21 min</div></div>
+              <button class="overflow" aria-label="More options for Rebirth part 2">⋮</button>
+            </div>
+            <p class="description">Terry takes the Batsuit to find his father’s killer. Bruce must decide whether Gotham is ready for a new Batman.</p>
+          </article>
+          <article class="episode">
+            <div class="episode-top">
+              <div class="thumb ep3"><span class="play-dot">▶</span></div>
+              <div class="ep-info"><h3>3. Black Out</h3><div class="runtime">22 min</div></div>
+              <button class="overflow" aria-label="More options for Black Out">⋮</button>
+            </div>
+            <p class="description">A shadowy villain who can melt into darkness targets a powerful company, and Terry faces his first mission on his own.</p>
+          </article>
+        </section>
+      </div>
+      <div class="home-indicator"></div>
+    </section>
+  </main>
+  <script>
+    const toggle = document.getElementById('synopsisToggle');
+    const synopsis = document.getElementById('synopsis');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      synopsis.classList.toggle('collapsed', expanded);
+      toggle.textContent = expanded ? 'Show more' : 'Show less';
+    });
+  </script>
+</body>
+</html>
