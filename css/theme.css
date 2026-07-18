@@ -1,0 +1,7 @@
+@import url('https://cdn.jsdelivr.net/gh/CTalvio/Ultrachromic/presets/monochromic_preset.css');
+
+/* ---- kid-friendly overlay (v2, selectors verified against live DOM) ---- */
+/* clamp synopsis to 3 lines */
+.overview, .detail-clamp-text { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+/* hide metadata clutter: tags, external links, genres, studios, cast */
+.itemTags, .itemExternalLinks, .genresGroup, .studiosGroup, #castCollapsible { display:none !important; }

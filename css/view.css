@@ -1,0 +1,103 @@
+/* Jellyfin Kids — view.css
+ * Styles ONLY the injected #kids-detail custom detail view so it can't fight the stock UI.
+ * Accent is a variable — owner did not commit to lime; default is a friendly violet-blue. */
+
+#kids-detail {
+  --kd-accent: #7c5cff;
+  --kd-accent-ink: #0a0713;
+  --kd-bg: #0b0b0d;
+  --kd-fg: #f4f4f6;
+  --kd-dim: #a8a8b3;
+  --kd-card: #16161a;
+  --kd-radius: 16px;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--kd-bg);
+  color: var(--kd-fg);
+  font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: env(safe-area-inset-bottom, 24px);
+}
+
+/* ---- hero (single cinematic backdrop, title overlaid, no poster card) ---- */
+#kids-detail .kd-hero {
+  position: relative; width: 100%; aspect-ratio: 16 / 10;
+  background-size: cover; background-position: center; background-color: #111;
+}
+#kids-detail .kd-hero::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(11,11,13,0) 35%, rgba(11,11,13,0.65) 72%, var(--kd-bg) 100%);
+}
+#kids-detail .kd-hero-title {
+  position: absolute; left: 16px; right: 16px; bottom: 12px; z-index: 1; margin: 0;
+  font-size: 30px; font-weight: 800; letter-spacing: -0.5px; text-shadow: 0 2px 18px rgba(0,0,0,0.6);
+}
+#kids-detail .kd-back {
+  position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); left: 12px; z-index: 2;
+  width: 38px; height: 38px; border-radius: 50%; border: none;
+  background: rgba(0,0,0,0.45); color: #fff; font-size: 24px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+/* row elements rendered as <button> need appearance reset */
+#kids-detail .kd-continue, #kids-detail .kd-ep, #kids-detail .kd-season {
+  appearance: none; -webkit-appearance: none; background: none; font: inherit; color: inherit; text-align: left; width: 100%;
+}
+#kids-detail .kd-play[disabled] { opacity: 0.55; }
+#kids-detail button:focus-visible { outline: 2px solid var(--kd-accent); outline-offset: 2px; }
+
+/* ---- metadata line (one tight row) ---- */
+#kids-detail .kd-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 16px 0; color: var(--kd-dim); font-size: 13px; }
+#kids-detail .kd-badge { border: 1px solid #3a3a42; border-radius: 4px; padding: 1px 6px; font-size: 12px; color: var(--kd-fg); }
+
+/* ---- actions: one primary Play pill + heart + overflow ---- */
+#kids-detail .kd-actions { display: flex; align-items: center; gap: 12px; padding: 14px 16px 4px; }
+#kids-detail .kd-play { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--kd-accent); color: var(--kd-accent-ink); border: none; border-radius: 999px; padding: 14px 18px; font-size: 16px; font-weight: 700; cursor: pointer; min-height: 48px; }
+#kids-detail .kd-play:active { filter: brightness(0.92); }
+#kids-detail .kd-icon-btn { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 999px; background: #1e1e24; border: none; color: var(--kd-fg); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
+#kids-detail .kd-icon-btn[aria-pressed="true"] { color: #ff5b7f; }
+
+/* ---- synopsis with working clamp/expand ---- */
+#kids-detail .kd-synopsis { padding: 10px 16px 0; }
+#kids-detail .kd-synopsis p { margin: 0; color: #d7d7de; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+#kids-detail .kd-synopsis[data-expanded="false"] p { -webkit-line-clamp: 3; }
+#kids-detail .kd-synopsis[data-expanded="true"] p { -webkit-line-clamp: unset; }
+#kids-detail .kd-more { background: none; border: none; color: var(--kd-accent); font-weight: 600; padding: 6px 0; cursor: pointer; font-size: 14px; }
+
+/* ---- section headers ---- */
+#kids-detail .kd-section { padding: 18px 16px 0; }
+#kids-detail .kd-section > h2 { margin: 0 0 10px; font-size: 18px; font-weight: 700; }
+
+/* ---- continue watching card ---- */
+#kids-detail .kd-continue { display: flex; gap: 12px; background: var(--kd-card); border-radius: var(--kd-radius); padding: 10px; align-items: center; }
+#kids-detail .kd-thumb { position: relative; border-radius: 10px; overflow: hidden; background: #222; }
+#kids-detail .kd-continue .kd-thumb { width: 132px; flex: 0 0 132px; aspect-ratio: 16/9; }
+#kids-detail .kd-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#kids-detail .kd-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255,255,255,0.25); }
+#kids-detail .kd-progress > i { display: block; height: 100%; background: var(--kd-accent); }
+#kids-detail .kd-c-title { font-weight: 700; font-size: 15px; }
+#kids-detail .kd-c-sub { color: var(--kd-dim); font-size: 13px; margin-top: 2px; }
+
+/* ---- seasons rail ---- */
+#kids-detail .kd-seasons { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+#kids-detail .kd-seasons::-webkit-scrollbar { display: none; }
+#kids-detail .kd-season { flex: 0 0 128px; background: var(--kd-card); border: 2px solid transparent; border-radius: 12px; padding: 10px; cursor: pointer; text-align: left; color: inherit; }
+#kids-detail .kd-season[aria-selected="true"] { border-color: var(--kd-accent); }
+#kids-detail .kd-s-num { font-weight: 700; }
+#kids-detail .kd-s-count { color: var(--kd-dim); font-size: 12px; margin-top: 2px; }
+
+/* ---- episode list (2-line clamp, no per-episode heart) ---- */
+#kids-detail .kd-episodes { margin-top: 4px; }
+#kids-detail .kd-ep { display: grid; grid-template-columns: 132px 1fr auto; gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid #1d1d22; cursor: pointer; }
+#kids-detail .kd-ep:first-child { border-top: none; }
+#kids-detail .kd-ep .kd-thumb { width: 132px; aspect-ratio: 16/9; }
+#kids-detail .kd-watched { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--kd-accent); color: var(--kd-accent-ink); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+#kids-detail .kd-ep-title { font-weight: 700; font-size: 15px; }
+#kids-detail .kd-ep-run { color: var(--kd-dim); font-size: 12px; margin: 2px 0 4px; }
+#kids-detail .kd-ep-desc { color: #c3c3cc; font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#kids-detail .kd-ep-more { align-self: center; background: none; border: none; color: var(--kd-dim); font-size: 20px; cursor: pointer; padding: 0 4px; }
+
+/* loading / error */
+#kids-detail .kd-status { padding: 40px 16px; text-align: center; color: var(--kd-dim); }
+@media (prefers-reduced-motion: reduce) { #kids-detail * { animation: none !important; transition: none !important; } }
