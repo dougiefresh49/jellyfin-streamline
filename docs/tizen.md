@@ -88,6 +88,28 @@ rerun. That is the standing cost of the Tizen route.
   `www/`, `.buildResult/www/index.html` carries the Streamline injection, and
   `.buildResult/www/streamline/` holds both hashed assets. `tizen build-web` reports BUILD
   SUCCESSFUL.
-- **Verified as far as signing.** Everything up to the `.wgt` is confirmed working on this
-  machine. Packaging and installing are unverified, because both need the certificate from
-  step 5 — and installing additionally needs the TV in Developer Mode.
+- **Verified end to end — 2026-08-05.** Built, signed with the `treecastle-tv` profile,
+  installed over `sdb`, launched, and confirmed rendering Streamline on a UN60DU7200FXZA
+  (101 transformed elements, matching desktop).
+
+## The host-IP trap
+
+Developer Mode opens port 26101 to everyone but only *accepts* connections from the Host PC IP
+configured on the TV. When this Mac's address changes, `sdb connect` fails while the port still
+reads as open — which looks like a broken TV rather than a stale setting, and cost a night of
+debugging here. The Mac moving between Ethernet and Wi-Fi is enough to trigger it, since those
+are separate DHCP leases.
+
+Reserve this machine's address in the router, and remember the same change breaks the *server*
+URL configured in every Jellyfin client, not just the sideload path.
+
+If `sdb` refuses despite a correct Host PC IP, connect during the window early in a TV **restart**
+(standby does not reopen it): loop `sdb connect` every 2s while it boots. Then wait ~45s before
+installing — the TV accepts a connection well before it can accept a 36MB package.
+
+Two operational notes for that flow:
+
+- Install with `tizen install`, never `sdb install`. The latter only pushes the file, reports
+  success, and installs nothing.
+- Do not `pkill` anything sdb-related; it takes down the local sdb server and drops the
+  connection.
