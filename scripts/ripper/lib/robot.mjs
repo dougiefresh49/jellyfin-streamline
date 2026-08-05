@@ -1,4 +1,7 @@
-const RECORD_TYPES = new Set(['DRV', 'TINFO', 'CINFO', 'MSG', 'PRGV', 'TCOUNT']);
+// PRGC/PRGT name the current and total operation. Without them PRGV percentages
+// are unreadable: the counter restarts at each new total-phase, so a percentage
+// only means something relative to the phase it belongs to.
+const RECORD_TYPES = new Set(['DRV', 'TINFO', 'CINFO', 'MSG', 'PRGV', 'PRGC', 'PRGT', 'TCOUNT']);
 
 function parseCsv(text) {
   const fields = [];
