@@ -1,20 +1,27 @@
-/* Jellyfin Kids — view.css
- * Styles ONLY the injected #kids-detail custom detail view so it can't fight the stock UI.
+/* Jellyfin Streamline — view.css
+ * Route-scoped styles for the injected home/detail views and display-settings accent picker.
  * Accent is a variable — owner did not commit to lime; default is a friendly violet-blue. */
 
-#kids-detail {
-  --kd-accent: #7c5cff;
-  --kd-accent-ink: #0a0713;
-  --kd-bg: #0b0b0d;
-  --kd-fg: #f4f4f6;
-  --kd-dim: #a8a8b3;
-  --kd-card: #16161a;
-  --kd-radius: 16px;
+/* Jellyfin 10.11's iPad layout paints these above the page-local overlay. Keep the native
+ * controls in the DOM (without Jellyfin's .hide class) for playback and overflow delegation. */
+body.streamline-series-active .skinHeader,
+body.streamline-series-active #itemDetailPage:not(.hide) > .detailPageWrapperContainer > .detailPagePrimaryContainer > .detailRibbon {
+  display: none !important;
+}
+
+#streamline-detail {
+  --sl-accent: #7c5cff;
+  --sl-accent-ink: #0a0713;
+  --sl-bg: #0b0b0d;
+  --sl-fg: #f4f4f6;
+  --sl-dim: #a8a8b3;
+  --sl-card: #16161a;
+  --sl-radius: 16px;
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: var(--kd-bg);
-  color: var(--kd-fg);
+  background: var(--sl-bg);
+  color: var(--sl-fg);
   font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -22,82 +29,501 @@
 }
 
 /* ---- hero (single cinematic backdrop, title overlaid, no poster card) ---- */
-#kids-detail .kd-hero {
+#streamline-detail .sl-hero {
   position: relative; width: 100%; aspect-ratio: 16 / 10;
   background-size: cover; background-position: center; background-color: #111;
 }
-#kids-detail .kd-hero::after {
+#streamline-detail .sl-hero::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(11,11,13,0) 35%, rgba(11,11,13,0.65) 72%, var(--kd-bg) 100%);
+  background: linear-gradient(180deg, rgba(11,11,13,0) 35%, rgba(11,11,13,0.65) 72%, var(--sl-bg) 100%);
 }
-#kids-detail .kd-hero-title {
+#streamline-detail .sl-hero-title {
   position: absolute; left: 16px; right: 16px; bottom: 12px; z-index: 1; margin: 0;
   font-size: 30px; font-weight: 800; letter-spacing: -0.5px; text-shadow: 0 2px 18px rgba(0,0,0,0.6);
 }
-#kids-detail .kd-back {
+#streamline-detail .sl-back {
   position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); left: 12px; z-index: 2;
   width: 38px; height: 38px; border-radius: 50%; border: none;
   background: rgba(0,0,0,0.45); color: #fff; font-size: 24px; line-height: 1; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
 }
 /* row elements rendered as <button> need appearance reset */
-#kids-detail .kd-continue, #kids-detail .kd-ep, #kids-detail .kd-season {
-  appearance: none; -webkit-appearance: none; background: none; font: inherit; color: inherit; text-align: left; width: 100%;
+#streamline-detail .sl-continue, #streamline-detail .sl-ep, #streamline-detail .sl-season, #streamline-detail .sl-extra {
+  appearance: none; -webkit-appearance: none; background: none; border: none; font: inherit; color: inherit; text-align: left; width: 100%;
 }
-#kids-detail .kd-play[disabled] { opacity: 0.55; }
-#kids-detail button:focus-visible { outline: 2px solid var(--kd-accent); outline-offset: 2px; }
+#streamline-detail .sl-play[disabled] { opacity: 0.55; }
+#streamline-detail button:focus-visible { outline: 2px solid var(--sl-accent); outline-offset: 2px; }
 
 /* ---- metadata line (one tight row) ---- */
-#kids-detail .kd-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 16px 0; color: var(--kd-dim); font-size: 13px; }
-#kids-detail .kd-badge { border: 1px solid #3a3a42; border-radius: 4px; padding: 1px 6px; font-size: 12px; color: var(--kd-fg); }
+#streamline-detail .sl-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 16px 0; color: var(--sl-dim); font-size: 13px; }
+#streamline-detail .sl-badge { border: 1px solid #3a3a42; border-radius: 4px; padding: 1px 6px; font-size: 12px; color: var(--sl-fg); }
 
-/* ---- actions: one primary Play pill + heart + overflow ---- */
-#kids-detail .kd-actions { display: flex; align-items: center; gap: 12px; padding: 14px 16px 4px; }
-#kids-detail .kd-play { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--kd-accent); color: var(--kd-accent-ink); border: none; border-radius: 999px; padding: 14px 18px; font-size: 16px; font-weight: 700; cursor: pointer; min-height: 48px; }
-#kids-detail .kd-play:active { filter: brightness(0.92); }
-#kids-detail .kd-icon-btn { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 999px; background: #1e1e24; border: none; color: var(--kd-fg); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
-#kids-detail .kd-icon-btn[aria-pressed="true"] { color: #ff5b7f; }
+/* ---- actions: one primary Play pill + trailer + heart + overflow ---- */
+#streamline-detail .sl-actions { display: flex; align-items: center; gap: 12px; padding: 14px 16px 4px; }
+#streamline-detail .sl-play { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--sl-accent); color: var(--sl-accent-ink); border: none; border-radius: 999px; padding: 14px 18px; font-size: 16px; font-weight: 700; cursor: pointer; min-height: 48px; }
+#streamline-detail .sl-play:active { filter: brightness(0.92); }
+#streamline-detail .sl-icon-btn { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 999px; background: #1e1e24; border: none; color: var(--sl-fg); display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; }
+#streamline-detail .sl-trailer[hidden] { display: none; }
+#streamline-detail .sl-trailer svg { display: block; pointer-events: none; }
+#streamline-detail .sl-icon-btn[aria-pressed="true"] { color: #ff5b7f; }
 
 /* ---- synopsis with working clamp/expand ---- */
-#kids-detail .kd-synopsis { padding: 10px 16px 0; }
-#kids-detail .kd-synopsis p { margin: 0; color: #d7d7de; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
-#kids-detail .kd-synopsis[data-expanded="false"] p { -webkit-line-clamp: 3; }
-#kids-detail .kd-synopsis[data-expanded="true"] p { -webkit-line-clamp: unset; }
-#kids-detail .kd-more { background: none; border: none; color: var(--kd-accent); font-weight: 600; padding: 6px 0; cursor: pointer; font-size: 14px; }
+#streamline-detail .sl-synopsis { padding: 10px 16px 0; }
+#streamline-detail .sl-synopsis p { margin: 0; color: #d7d7de; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+#streamline-detail .sl-synopsis[data-expanded="false"] p { -webkit-line-clamp: 3; }
+#streamline-detail .sl-synopsis[data-expanded="true"] p { -webkit-line-clamp: unset; }
+#streamline-detail .sl-more { background: none; border: none; color: var(--sl-accent); font-weight: 600; padding: 6px 0; cursor: pointer; font-size: 14px; }
 
 /* ---- section headers ---- */
-#kids-detail .kd-section { padding: 18px 16px 0; }
-#kids-detail .kd-section > h2 { margin: 0 0 10px; font-size: 18px; font-weight: 700; }
+#streamline-detail .sl-section { padding: 18px 16px 0; }
+#streamline-detail .sl-section > h2 { margin: 0 0 10px; font-size: 18px; font-weight: 700; }
 
 /* ---- continue watching card ---- */
-#kids-detail .kd-continue { display: flex; gap: 12px; background: var(--kd-card); border-radius: var(--kd-radius); padding: 10px; align-items: center; }
-#kids-detail .kd-thumb { position: relative; border-radius: 10px; overflow: hidden; background: #222; }
-#kids-detail .kd-continue .kd-thumb { width: 132px; flex: 0 0 132px; aspect-ratio: 16/9; }
-#kids-detail .kd-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-#kids-detail .kd-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255,255,255,0.25); }
-#kids-detail .kd-progress > i { display: block; height: 100%; background: var(--kd-accent); }
-#kids-detail .kd-c-title { font-weight: 700; font-size: 15px; }
-#kids-detail .kd-c-sub { color: var(--kd-dim); font-size: 13px; margin-top: 2px; }
+#streamline-detail .sl-continue { display: flex; gap: 12px; background: var(--sl-card); border-radius: var(--sl-radius); padding: 10px; align-items: center; }
+#streamline-detail .sl-thumb { position: relative; border-radius: 10px; overflow: hidden; background: #222; }
+#streamline-detail .sl-continue .sl-thumb { width: 132px; flex: 0 0 132px; aspect-ratio: 16/9; }
+#streamline-detail .sl-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#streamline-detail .sl-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255,255,255,0.25); }
+#streamline-detail .sl-progress > i { display: block; height: 100%; background: var(--sl-accent); }
+#streamline-detail .sl-movie-progress { position: absolute; z-index: 2; left: 16px; right: 16px; bottom: 0; height: 3px; background: rgba(255,255,255,0.25); }
+#streamline-detail .sl-movie-progress > i { display: block; height: 100%; background: var(--sl-accent); }
+#streamline-detail .sl-c-title { font-weight: 700; font-size: 15px; }
+#streamline-detail .sl-c-sub { color: var(--sl-dim); font-size: 13px; margin-top: 2px; }
 
 /* ---- seasons rail ---- */
-#kids-detail .kd-seasons { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-#kids-detail .kd-seasons::-webkit-scrollbar { display: none; }
-#kids-detail .kd-season { flex: 0 0 128px; background: var(--kd-card); border: 2px solid transparent; border-radius: 12px; padding: 10px; cursor: pointer; text-align: left; color: inherit; }
-#kids-detail .kd-season[aria-selected="true"] { border-color: var(--kd-accent); }
-#kids-detail .kd-s-num { font-weight: 700; }
-#kids-detail .kd-s-count { color: var(--kd-dim); font-size: 12px; margin-top: 2px; }
+#streamline-detail .sl-seasons { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+#streamline-detail .sl-seasons::-webkit-scrollbar { display: none; }
+#streamline-detail .sl-season { flex: 0 0 128px; background: var(--sl-card); border: 2px solid transparent; border-radius: 12px; padding: 10px; cursor: pointer; text-align: left; color: inherit; }
+#streamline-detail .sl-season[aria-selected="true"] { border-color: var(--sl-accent); }
+#streamline-detail .sl-s-num { font-weight: 700; }
+#streamline-detail .sl-s-count { color: var(--sl-dim); font-size: 12px; margin-top: 2px; }
 
 /* ---- episode list (2-line clamp, no per-episode heart) ---- */
-#kids-detail .kd-episodes { margin-top: 4px; }
-#kids-detail .kd-ep { display: grid; grid-template-columns: 132px 1fr auto; gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid #1d1d22; cursor: pointer; }
-#kids-detail .kd-ep:first-child { border-top: none; }
-#kids-detail .kd-ep .kd-thumb { width: 132px; aspect-ratio: 16/9; }
-#kids-detail .kd-watched { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--kd-accent); color: var(--kd-accent-ink); display: flex; align-items: center; justify-content: center; font-size: 13px; }
-#kids-detail .kd-ep-title { font-weight: 700; font-size: 15px; }
-#kids-detail .kd-ep-run { color: var(--kd-dim); font-size: 12px; margin: 2px 0 4px; }
-#kids-detail .kd-ep-desc { color: #c3c3cc; font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-#kids-detail .kd-ep-more { align-self: center; background: none; border: none; color: var(--kd-dim); font-size: 20px; cursor: pointer; padding: 0 4px; }
+#streamline-detail .sl-episodes { margin-top: 4px; }
+#streamline-detail .sl-ep { display: grid; grid-template-columns: 132px 1fr auto; gap: 12px; align-items: start; padding: 12px 0; cursor: pointer; }
+#streamline-detail .sl-ep .sl-thumb { width: 132px; aspect-ratio: 16/9; }
+#streamline-detail .sl-watched { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--sl-accent); color: var(--sl-accent-ink); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+#streamline-detail .sl-ep-title { font-weight: 700; font-size: 15px; }
+#streamline-detail .sl-ep-run { color: var(--sl-dim); font-size: 12px; margin: 2px 0 4px; }
+#streamline-detail .sl-ep-desc { color: #c3c3cc; font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#streamline-detail .sl-ep-more { align-self: center; background: none; border: none; color: var(--sl-dim); font-size: 20px; cursor: pointer; padding: 0 4px; }
+
+/* ---- movie extras ---- */
+#streamline-detail .sl-extras { padding-bottom: 20px; }
+#streamline-detail .sl-extra { display: flex; align-items: center; gap: 12px; padding: 8px 0; cursor: pointer; }
+#streamline-detail .sl-extra .sl-thumb { width: 132px; flex: 0 0 132px; aspect-ratio: 16/9; }
+#streamline-detail .sl-extra-copy { min-width: 0; }
+#streamline-detail .sl-extra-title { font-weight: 700; font-size: 15px; }
+#streamline-detail .sl-extra-run { color: var(--sl-dim); font-size: 12px; margin-top: 2px; }
 
 /* loading / error */
-#kids-detail .kd-status { padding: 40px 16px; text-align: center; color: var(--kd-dim); }
-@media (prefers-reduced-motion: reduce) { #kids-detail * { animation: none !important; transition: none !important; } }
+#streamline-detail .sl-status { padding: 40px 16px; text-align: center; color: var(--sl-dim); }
+
+/* ---- Home: quiet chrome, cinematic resume billboard, edge-to-edge rails ---- */
+body.streamline-home-active .skinHeader,
+body.streamline-home-active #indexPage.homePage:not(.hide) > #homeTab,
+body.streamline-home-active #indexPage.homePage:not(.hide) > #favoritesTab {
+  display: none !important;
+}
+/* the page reserves padding for the (hidden) native header — reclaim it so our topbar sits at y=0 */
+body.streamline-home-active #indexPage.homePage:not(.hide) {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+#streamline-home {
+  --sl-accent: #7c5cff;
+  --sl-accent-ink: #0a0713;
+  --sl-bg: #0b0b0d;
+  --sl-fg: #f4f4f6;
+  --sl-dim: #a8a8b3;
+  --sl-card: #16161a;
+  --sl-radius: 16px;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  min-width: 320px;
+  padding-bottom: env(safe-area-inset-bottom, 24px);
+  color: var(--sl-fg);
+  background: radial-gradient(circle at 50% -14rem, color-mix(in srgb, var(--sl-accent) 18%, transparent), transparent 30rem), var(--sl-bg);
+  font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+#streamline-home *, #streamline-home *::before, #streamline-home *::after { box-sizing: border-box; }
+#streamline-home button { appearance: none; -webkit-appearance: none; color: inherit; font: inherit; }
+#streamline-home button:focus-visible { outline: 2px solid var(--sl-accent); outline-offset: 3px; }
+#streamline-home .sl-home-topbar {
+  position: relative; z-index: 5; height: 72px; padding: max(12px, env(safe-area-inset-top)) 20px 8px;
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(180deg, rgba(11,11,13,.96), rgba(11,11,13,.72) 72%, transparent);
+}
+#streamline-home .sl-home-wordmark { margin-right: auto; display: flex; align-items: center; gap: 9px; font-size: 18px; font-weight: 780; letter-spacing: -.035em; }
+#streamline-home .sl-home-mark {
+  width: 19px; height: 22px; background: linear-gradient(145deg, color-mix(in srgb, var(--sl-accent) 55%, white), var(--sl-accent));
+  clip-path: polygon(50% 0,100% 100%,72% 100%,50% 53%,28% 100%,0 100%); filter: drop-shadow(0 3px 10px color-mix(in srgb, var(--sl-accent) 45%, transparent));
+}
+#streamline-home .sl-home-icon, #streamline-home .sl-home-avatar {
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer;
+}
+#streamline-home .sl-home-icon { background: #1b1b20; }
+#streamline-home .sl-home-icon svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
+#streamline-home .sl-home-avatar { background: linear-gradient(145deg, color-mix(in srgb, var(--sl-accent) 48%, white) 0 46%, color-mix(in srgb, var(--sl-accent) 72%, black) 47%); color: white; font-size: 13px; font-weight: 800; box-shadow: inset 0 0 0 2px rgba(255,255,255,.15); }
+#streamline-home .sl-home-hero-slot { min-height: 0; }
+#streamline-home .sl-home-hero {
+  min-height: clamp(340px,52vw,470px); margin-top: -72px; position: relative; overflow: hidden;
+  background-color: #10101b; background-size: cover; background-position: center;
+}
+#streamline-home .sl-home-hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg,rgba(8,8,11,.92) 0%,rgba(8,8,11,.55) 43%,rgba(8,8,11,.08) 78%), linear-gradient(180deg,rgba(11,11,13,.08) 42%,var(--sl-bg) 100%);
+}
+#streamline-home .sl-home-hero-copy { width: min(500px,68%); padding: 128px 24px 56px; position: relative; z-index: 2; }
+#streamline-home .sl-home-kicker { color: color-mix(in srgb, var(--sl-accent) 52%, white); font-size: 11px; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+#streamline-home .sl-home-hero h2 { margin: 7px 0 8px; font-size: clamp(38px,7vw,61px); line-height: .92; letter-spacing: -.065em; text-shadow: 0 8px 30px #000; }
+#streamline-home .sl-home-hero-meta { color: #dddce4; font-size: 13px; font-weight: 620; }
+#streamline-home .sl-home-hero-summary { max-width: 440px; margin: 10px 0 16px; color: #c5c3ce; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#streamline-home .sl-home-hero-actions { display: flex; gap: 10px; }
+#streamline-home .sl-home-primary, #streamline-home .sl-home-secondary {
+  min-height: 48px; border: 0; border-radius: 999px; padding: 0 20px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 750;
+}
+#streamline-home .sl-home-primary { color: var(--sl-accent-ink); background: var(--sl-accent); box-shadow: 0 8px 24px color-mix(in srgb, var(--sl-accent) 28%, transparent); }
+#streamline-home .sl-home-secondary { background: rgba(31,31,38,.82); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+#streamline-home .sl-home-feed { margin-top: -22px; padding: 0 0 42px; position: relative; z-index: 3; }
+#streamline-home .sl-home-hero-slot:empty + .sl-home-feed { margin-top: 0; padding-top: 8px; }
+#streamline-home .sl-home-section { padding-top: 22px; }
+#streamline-home .sl-home-section-head { padding: 0 20px; margin-bottom: 11px; display: flex; align-items: baseline; }
+#streamline-home .sl-home-section-head h2 { margin: 0; font-size: 20px; letter-spacing: -.025em; }
+#streamline-home .sl-home-rail { display: flex; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: none; padding: 0 20px 8px; }
+#streamline-home .sl-home-rail::-webkit-scrollbar { display: none; }
+#streamline-home .sl-home-card-wrap, #streamline-home .sl-home-skeleton { position: relative; flex: 0 0 auto; scroll-snap-align: start; }
+#streamline-home .sl-home-landscape { width: clamp(244px,37vw,310px); }
+#streamline-home .sl-home-poster { width: clamp(128px,18vw,154px); }
+#streamline-home .sl-home-card { width: 100%; padding: 0; border: 0; background: transparent; text-align: left; cursor: pointer; }
+#streamline-home .sl-home-art { position: relative; overflow: hidden; background: var(--sl-card); box-shadow: 0 10px 25px rgba(0,0,0,.22); }
+#streamline-home .sl-home-landscape .sl-home-art { aspect-ratio: 16/9; border-radius: var(--sl-radius); }
+#streamline-home .sl-home-poster .sl-home-art { aspect-ratio: 2/3; border-radius: var(--sl-radius); }
+#streamline-home .sl-home-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg,transparent 54%,rgba(0,0,0,.42)); }
+#streamline-home .sl-home-art img { width: 100%; height: 100%; display: block; object-fit: cover; }
+#streamline-home .sl-home-play-chip {
+  position: absolute; left: 12px; top: clamp(81px,calc(20.8125vw - 44px),118px); z-index: 4;
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0 0 0 2px; border: 0; border-radius: 50%;
+  display: grid; place-items: center; color: #101014; background: rgba(255,255,255,.94); box-shadow: 0 4px 16px rgba(0,0,0,.3); cursor: pointer;
+}
+#streamline-home .sl-home-progress { height: 4px; position: absolute; inset: auto 0 0; z-index: 3; background: rgba(255,255,255,.27); }
+#streamline-home .sl-home-progress i { display: block; height: 100%; background: var(--sl-accent); }
+#streamline-home .sl-home-card-title, #streamline-home .sl-home-card-sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#streamline-home .sl-home-card-title { margin-top: 8px; color: var(--sl-fg); font-weight: 700; font-size: 14px; }
+#streamline-home .sl-home-card-sub { margin-top: 2px; color: var(--sl-dim); font-size: 12px; }
+#streamline-home .sl-home-poster .sl-home-card-title { margin-top: 9px; }
+#streamline-home .sl-home-skeleton::before { content: ""; display: block; border-radius: var(--sl-radius); background: linear-gradient(105deg,#16161a 30%,#222229 46%,#16161a 62%); background-size: 220% 100%; animation: sl-home-shimmer 1.25s linear infinite; }
+#streamline-home .sl-home-skeleton.sl-home-landscape::before { aspect-ratio: 16/9; }
+#streamline-home .sl-home-skeleton.sl-home-poster::before { aspect-ratio: 2/3; }
+#streamline-home .sl-home-retry { min-height: 44px; margin: 24px 20px; padding: 0 16px; border: 0; border-radius: 999px; color: var(--sl-dim); background: #1b1b20; cursor: pointer; }
+@keyframes sl-home-shimmer { to { background-position-x: -220%; } }
+@media (max-width: 560px) {
+  #streamline-home .sl-home-topbar { padding-left: 16px; padding-right: 16px; }
+  #streamline-home .sl-home-wordmark span:last-child { font-size: 17px; }
+  #streamline-home .sl-home-hero { min-height: 430px; }
+  #streamline-home .sl-home-hero-copy { width: 78%; padding: 126px 16px 62px; }
+  #streamline-home .sl-home-hero h2 { font-size: 42px; }
+  #streamline-home .sl-home-section-head { padding: 0 16px; }
+  #streamline-home .sl-home-rail { padding-left: 16px; padding-right: 16px; }
+  #streamline-home .sl-home-landscape { width: 252px; }
+  #streamline-home .sl-home-poster { width: 132px; }
+  #streamline-home .sl-home-play-chip { top: 86px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  #streamline-home .sl-home-art { transition: transform .18s ease, filter .18s ease; }
+  #streamline-home .sl-home-card:active .sl-home-art { transform: scale(.98); filter: brightness(.9); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #streamline-home *, #streamline-home *::before, #streamline-home *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* ---- Display settings accent picker ---- */
+.sl-accent-picker { margin-top: 2em; }
+.sl-accent-picker .sl-accent-options { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.sl-accent-picker .sl-accent-swatch {
+  appearance: none; -webkit-appearance: none; position: relative; width: 44px; height: 44px;
+  min-width: 44px; min-height: 44px; padding: 0; border: 3px solid transparent; border-radius: 50%;
+  background: var(--sl-swatch); color: var(--sl-swatch-ink); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.sl-accent-picker .sl-accent-swatch[aria-checked="true"] {
+  border-color: #fff; box-shadow: 0 0 0 3px var(--sl-swatch), 0 0 0 6px #fff;
+}
+.sl-accent-picker .sl-accent-check { font-size: 22px; font-weight: 900; line-height: 1; opacity: 0; }
+.sl-accent-picker .sl-accent-swatch[aria-checked="true"] .sl-accent-check { opacity: 1; }
+.sl-accent-picker .sl-accent-swatch:focus-visible { outline: 3px solid #fff; outline-offset: 7px; }
+@media (prefers-reduced-motion: reduce) { #streamline-detail * { animation: none !important; transition: none !important; } }
+
+/* ============================================================================
+   TV layout (Samsung Tizen app, and any client jellyfin-web flags as layout-tv)
+   ----------------------------------------------------------------------------
+   The base styles are sized for a phone or a desktop window an arm's length
+   away. On a 55" panel across a room those same pixel sizes read as tiny, and
+   the mouse/touch affordances do nothing for a D-pad. This layer rescales for a
+   10-foot viewing distance and gives focus a visible, Netflix-style treatment:
+   the focused tile grows and gains a white ring, so where you are is obvious
+   from the couch.
+
+   Scoped to html.layout-tv, which jellyfin-web sets from its own layout
+   detection -- so it never touches phone or desktop.
+   ========================================================================== */
+html.layout-tv #streamline-home {
+  /* TVs overscan; keep content off the bezel. */
+  --sl-tv-safe: 3.5vw;
+  /* Room for a focused tile to grow without being clipped by the rail. */
+  --sl-tv-grow: 1.08;
+  --sl-tv-poster-w: clamp(210px, 14vw, 280px);
+  /* Poster art is 2:3, so this is the row's tile height. A focused card keeps
+     it and only changes width, so the row never changes height and the labels
+     underneath stay on one line. */
+  --sl-tv-tile-h: calc(var(--sl-tv-poster-w) * 1.5);
+  --sl-tv-focus-w: clamp(400px, 27vw, 560px);
+}
+
+/* ---- top bar ---- */
+html.layout-tv #streamline-home .sl-home-topbar { padding: 24px var(--sl-tv-safe) 8px; }
+html.layout-tv #streamline-home .sl-home-wordmark { font-size: 30px; gap: 14px; }
+html.layout-tv #streamline-home .sl-home-icon,
+html.layout-tv #streamline-home .sl-home-avatar { width: 54px; height: 54px; font-size: 21px; }
+html.layout-tv #streamline-home .sl-home-icon svg { width: 28px; }
+
+/* ---- hero ---- */
+/* 52vw is sized for a portrait phone; on a 16:9 panel it leaves the hero
+   squat and the rails floating in dead space. Bind it to viewport height
+   instead, which is the dimension that actually constrains a TV screen. */
+html.layout-tv #streamline-home .sl-home-hero { min-height: min(62vh, 620px); margin-top: -84px; }
+html.layout-tv #streamline-home .sl-home-hero-copy {
+  width: min(980px, 58%);
+  padding: 190px var(--sl-tv-safe) 84px;
+}
+html.layout-tv #streamline-home .sl-home-kicker { font-size: 18px; letter-spacing: .2em; }
+html.layout-tv #streamline-home .sl-home-featured-title,
+html.layout-tv #streamline-home .sl-hero-title { font-size: clamp(48px, 4.4vw, 78px); line-height: 1.03; }
+html.layout-tv #streamline-home .sl-home-hero-meta { font-size: 22px; }
+html.layout-tv #streamline-home .sl-home-hero-summary {
+  font-size: 24px; line-height: 1.45; margin-top: 14px;
+  /* Long synopses should not push the buttons off a fixed-height screen. */
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+html.layout-tv #streamline-home .sl-home-hero-actions { gap: 18px; margin-top: 30px; }
+html.layout-tv #streamline-home .sl-home-primary,
+html.layout-tv #streamline-home .sl-home-secondary {
+  font-size: 25px; padding: 18px 38px; border-radius: 999px;
+}
+
+/* ---- section headings ---- */
+html.layout-tv #streamline-home .sl-home-section { padding-top: 40px; }
+html.layout-tv #streamline-home .sl-home-section-head { padding: 0 var(--sl-tv-safe); margin-bottom: 18px; }
+html.layout-tv #streamline-home .sl-home-section-head h2 { font-size: 36px; }
+
+/* ---- rails and tiles ---- */
+html.layout-tv #streamline-home .sl-home-rail {
+  gap: 26px;
+  padding-left: var(--sl-tv-safe);
+  padding-right: var(--sl-tv-safe);
+  /* Without this, focusing the first tile scrolls it flush to the container
+     edge -- underneath the padding above -- so it reads as clipped off-screen.
+     scroll-padding keeps the safe margin when focus drives the scroll. */
+  scroll-padding-inline: var(--sl-tv-safe);
+  /* The rail clips on overflow, so a growing tile needs vertical headroom.
+     The negative margin keeps the extra padding from spacing the rails apart. */
+  padding-block: 30px;
+  margin-block: -30px;
+  overflow-y: visible;
+}
+html.layout-tv #streamline-home .sl-home-landscape { width: clamp(400px, 27vw, 560px); }
+html.layout-tv #streamline-home .sl-home-poster { width: var(--sl-tv-poster-w); }
+html.layout-tv #streamline-home .sl-home-card-title { font-size: 26px; margin-top: 14px; }
+html.layout-tv #streamline-home .sl-home-card-sub { font-size: 21px; margin-top: 5px; }
+html.layout-tv #streamline-home .sl-home-play-chip { width: 74px; height: 74px; }
+html.layout-tv #streamline-home .sl-home-play-chip svg { width: 30px; }
+html.layout-tv #streamline-home .sl-home-progress { height: 7px; }
+
+/* ---- focus: the D-pad's only feedback, so make it unmistakable ---- */
+html.layout-tv #streamline-home .sl-home-art {
+  /* transform only: composited on the GPU, no layout, no paint of a blurred
+     shadow. This is the one animation a low-power panel handles comfortably. */
+  transition: transform .16s ease;
+  transform-origin: center center;
+}
+html.layout-tv #streamline-home .sl-home-card:focus { outline: none; }
+html.layout-tv #streamline-home .sl-home-card:focus .sl-home-art,
+html.layout-tv #streamline-home .sl-home-card:focus-visible .sl-home-art {
+  transform: scale(var(--sl-tv-grow));
+  outline: 5px solid #fff;
+  outline-offset: -1px;
+}
+html.layout-tv #streamline-home .sl-home-card:focus .sl-home-card-title { color: #fff; }
+/* Lift the focused tile above its neighbours so the ring is never overlapped. */
+html.layout-tv #streamline-home .sl-home-card-wrap:focus-within { z-index: 6; }
+html.layout-tv #streamline-home .sl-home-card-wrap { z-index: 1; }
+
+/* Hero buttons get the same unmistakable ring. */
+html.layout-tv #streamline-home .sl-home-primary:focus,
+html.layout-tv #streamline-home .sl-home-secondary:focus {
+  outline: 5px solid #fff;
+  outline-offset: 2px;
+}
+html.layout-tv #streamline-home button:focus-visible { outline: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.layout-tv #streamline-home .sl-home-art { transition: none; }
+}
+
+/* ---- focused poster expands into a landscape card (the Netflix move) ----
+   Not a scale: the tile widens in flow, pushing its neighbours along, and its
+   artwork swaps from the 2:3 poster to the 16:9 backdrop. theme.js toggles
+   .sl-tv-focus and swaps the image source, since the backdrop is a different
+   asset rather than a transform of the poster. */
+html.layout-tv #streamline-home .sl-home-poster {
+  /* No transition on width. width is a layout property, so animating it made
+     the browser re-flow the entire rail every frame on the TV's CPU -- which is
+     what the lag was. The size change is now instant; what the eye reads as the
+     transition is the artwork cross-fade below, which is composited. */
+  transition: none;
+}
+/* Height is pinned and only width animates: the backdrop is cropped to fill by
+   the existing object-fit:cover, and the row keeps a constant height. */
+html.layout-tv #streamline-home .sl-home-poster .sl-home-art {
+  aspect-ratio: auto;
+  height: var(--sl-tv-tile-h);
+  transition: none;
+}
+/* The tile holds the wide art cropped to portrait, so focus reveals more of the
+   same picture. Anchor the crop so the reveal grows outward from the middle
+   rather than sliding the subject sideways. */
+html.layout-tv #streamline-home .sl-home-poster .sl-home-art img { object-position: center; }
+html.layout-tv #streamline-home .sl-home-poster.sl-tv-focus {
+  width: var(--sl-tv-focus-w);
+}
+/* The widening IS the emphasis here, so drop the scale to avoid double motion. */
+html.layout-tv #streamline-home .sl-home-poster.sl-tv-focus .sl-home-card:focus .sl-home-art {
+  transform: none;
+}
+
+/* ---- navigation performance on a low-power panel ----
+   Moving focus between rows was the slow part, not the expand. Two causes:
+   every off-screen row was still being laid out and painted, and the browser
+   was animating each focus scroll. */
+
+/* Skip rendering work for rows that are off-screen. The placeholder size keeps
+   the scrollbar and scroll positions honest while a row is skipped. */
+html.layout-tv #streamline-home .sl-home-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 460px;
+}
+
+/* Smooth scrolling means the TV animates every focus move; at this hardware's
+   frame budget that reads as lag rather than polish. Jump instead. */
+html.layout-tv #streamline-home,
+html.layout-tv #streamline-home .sl-home-rail { scroll-behavior: auto; }
+
+/* Isolate each tile's painting so a focus change repaints one card, not a row. */
+html.layout-tv #streamline-home .sl-home-card-wrap { contain: paint; }
+
+/* ============================================================================
+   TV layout — detail view
+   ----------------------------------------------------------------------------
+   The detail view had no TV layer at all, so it rendered phone styles into a
+   1920px viewport. The worst of it was the hero: aspect-ratio 16/10 across the
+   full width computes to ~1200px tall, which pushed the actions and episode
+   list off the bottom of the screen entirely.
+   ========================================================================== */
+html.layout-tv #streamline-detail {
+  --sl-tv-safe: 3.5vw;
+  font-size: 22px;
+}
+
+/* ---- hero: bind to viewport height, not width ---- */
+html.layout-tv #streamline-detail .sl-hero {
+  aspect-ratio: auto;
+  height: min(56vh, 560px);
+}
+html.layout-tv #streamline-detail .sl-hero-title {
+  left: var(--sl-tv-safe); right: var(--sl-tv-safe); bottom: 24px;
+  font-size: clamp(44px, 3.6vw, 68px);
+}
+html.layout-tv #streamline-detail .sl-back {
+  top: 24px; left: var(--sl-tv-safe); width: 60px; height: 60px; font-size: 34px;
+}
+
+/* ---- metadata, actions, synopsis ---- */
+html.layout-tv #streamline-detail .sl-meta {
+  padding: 18px var(--sl-tv-safe) 0; font-size: 21px; gap: 14px;
+}
+html.layout-tv #streamline-detail .sl-badge { font-size: 19px; padding: 3px 10px; }
+html.layout-tv #streamline-detail .sl-actions {
+  padding: 24px var(--sl-tv-safe) 6px; gap: 18px;
+}
+html.layout-tv #streamline-detail .sl-play {
+  /* A full-width play button looks absurd on a 55" panel; size it to content. */
+  flex: 0 0 auto; min-width: 280px; font-size: 25px; min-height: 68px; padding: 16px 36px;
+}
+html.layout-tv #streamline-detail .sl-icon-btn {
+  width: 68px; height: 68px; flex: 0 0 68px; font-size: 27px;
+}
+html.layout-tv #streamline-detail .sl-synopsis { padding: 18px var(--sl-tv-safe) 0; max-width: 1200px; }
+html.layout-tv #streamline-detail .sl-synopsis p { font-size: 23px; line-height: 1.45; }
+html.layout-tv #streamline-detail .sl-more { font-size: 22px; }
+
+/* ---- sections, seasons ---- */
+html.layout-tv #streamline-detail .sl-section { padding: 34px var(--sl-tv-safe) 0; }
+html.layout-tv #streamline-detail .sl-section > h2 { font-size: 32px; margin-bottom: 18px; }
+html.layout-tv #streamline-detail .sl-seasons { gap: 18px; scroll-padding-inline: var(--sl-tv-safe); }
+html.layout-tv #streamline-detail .sl-season { flex: 0 0 220px; padding: 18px; border-radius: 16px; }
+html.layout-tv #streamline-detail .sl-s-num { font-size: 25px; }
+html.layout-tv #streamline-detail .sl-s-count { font-size: 19px; margin-top: 5px; }
+
+/* ---- episode list ---- */
+html.layout-tv #streamline-detail .sl-ep {
+  grid-template-columns: 360px 1fr auto; gap: 26px; padding: 18px 0;
+}
+html.layout-tv #streamline-detail .sl-ep .sl-thumb { width: 360px; }
+html.layout-tv #streamline-detail .sl-continue .sl-thumb { width: 360px; flex: 0 0 360px; }
+html.layout-tv #streamline-detail .sl-ep-title { font-size: 26px; }
+html.layout-tv #streamline-detail .sl-ep-run { font-size: 20px; margin: 6px 0 8px; }
+html.layout-tv #streamline-detail .sl-ep-desc { font-size: 20px; line-height: 1.4; }
+html.layout-tv #streamline-detail .sl-ep-more { font-size: 30px; padding: 0 10px; }
+html.layout-tv #streamline-detail .sl-watched { width: 30px; height: 30px; font-size: 19px; top: 10px; right: 10px; }
+html.layout-tv #streamline-detail .sl-c-title { font-size: 25px; }
+html.layout-tv #streamline-detail .sl-c-sub { font-size: 20px; }
+html.layout-tv #streamline-detail .sl-extra { padding: 14px 0; gap: 20px; }
+html.layout-tv #streamline-detail .sl-extra-title { font-size: 24px; }
+html.layout-tv #streamline-detail .sl-extra-run, html.layout-tv #streamline-detail .sl-extra-copy { font-size: 19px; }
+
+/* ---- focus: same unmistakable ring as the home rails ---- */
+html.layout-tv #streamline-detail button:focus,
+html.layout-tv #streamline-detail button:focus-visible {
+  outline: 5px solid #fff; outline-offset: 3px;
+}
+html.layout-tv #streamline-detail .sl-ep:focus,
+html.layout-tv #streamline-detail .sl-extra:focus,
+html.layout-tv #streamline-detail .sl-continue:focus {
+  outline-offset: -3px; border-radius: 14px;
+}
+
+/* Jellyfin's TV-layout detail page paints a portrait poster card at z-index 3,
+   which sat on top of our overlay (z-index 1) and covered the title, metadata
+   and actions. Stack above it rather than hiding Jellyfin's markup, which the
+   theme still delegates playback to. */
+html.layout-tv #streamline-detail { z-index: 20; }
+
+/* A TV has no pointer to drag a scrollbar with, and the track sat over the
+   right-hand safe area. Hide it on TV only; the phone and desktop keep theirs. */
+html.layout-tv #streamline-home,
+html.layout-tv #streamline-detail { scrollbar-width: none; -ms-overflow-style: none; }
+html.layout-tv #streamline-home::-webkit-scrollbar,
+html.layout-tv #streamline-detail::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+/* The overlay is absolutely positioned inside Jellyfin's detail page, which on
+   TV is ~1400px tall against an 846px viewport. The page scrolls behind us, so
+   native content past our bottom edge showed through underneath (a stray row of
+   episode thumbnails). Pin to the viewport instead; the overlay does its own
+   scrolling internally, and Jellyfin's markup stays in the DOM for playback
+   delegation -- just covered. */
+html.layout-tv #streamline-detail { position: fixed; }
