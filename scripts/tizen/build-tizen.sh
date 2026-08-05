@@ -72,6 +72,18 @@ echo "theme present in staged www/"
 # certificate profile created in Tizen Studio's Certificate Manager.
 tizen build-web -e ".*" -e "README.md" -e "node_modules/*" -- "$WORKDIR"
 
+# A TV has no console, no address bar and no web inspector (sdb shell is locked
+# on retail sets), so the theme's on-screen debug banner is the only way to
+# observe it there. The app's entry point is a meta refresh into www/index.html,
+# so the opt-in flag rides along on that redirect.
+if [ "${SL_TV_DEBUG:-0}" = "1" ]; then
+  ENTRY="$WORKDIR/.buildResult/index.html"
+  [ -f "$ENTRY" ] || fail "cannot enable debug: $ENTRY missing"
+  /usr/bin/sed -i '' 's|url=www/index.html|url=www/index.html?sldebug=1|' "$ENTRY"
+  grep -q "sldebug=1" "$ENTRY" || fail "failed to add sldebug flag to $ENTRY"
+  echo "SL_TV_DEBUG=1: on-screen debug banner enabled in this package"
+fi
+
 if [ -z "${CERT_PROFILE:-}" ]; then
   echo
   echo "Built, unsigned. Set CERT_PROFILE=<profile name> to produce an installable .wgt."
