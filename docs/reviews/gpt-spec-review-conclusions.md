@@ -54,7 +54,7 @@ Per mounted detail view, teardown must:
 
 Store the original hidden state per element. Do not blindly set `display: block` on cleanup; the element may originally have been hidden or use a different display mode.
 
-The document-level route controller should remain installed until full script disposal/logout. Make reinjection safe by using a global versioned sentinel with a `dispose()` method. Otherwise repeated DevTools injection or proxy duplication will install multiple hash listeners and observers even though only one `#kids-detail` is visible.
+The document-level route controller should remain installed until full script disposal/logout. Make reinjection safe by using a global versioned sentinel with a `dispose()` method. Otherwise repeated DevTools injection or proxy duplication will install multiple hash listeners and observers even though only one `#streamline-detail` is visible.
 
 Favorite mutations also need teardown-safe optimistic behavior and rollback. Use Jellyfin’s authenticated favorite/user-data API rather than changing only the icon.
 

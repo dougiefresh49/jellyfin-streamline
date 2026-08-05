@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { pickMainTitle, matchMovie, folderName, EXPECTED, createProgressTracker } from '../rip-movies.mjs';
+import { pickMainTitle, matchMovie, folderName, EXPECTED, createProgressTracker, parseMovieFlag } from '../rip-movies.mjs';
 
 const prgt = (name) => ({ type: 'PRGT', fields: ['0', '0', name] });
 const prgv = (total) => ({ type: 'PRGV', fields: ['0', String(total), '65536'] });
@@ -82,4 +82,26 @@ test('milestones are reported every 10 points, never backwards', () => {
   assert.equal(p.accept(prgv(7000)), null, 'small forward moves stay quiet');
   assert.equal(p.accept(prgv(6554)), null, 'a backwards value reports nothing');
   assert.equal(p.accept(prgv(13108)), 20);
+});
+
+test('--movie parses "Title (Year)" and drops franchise stopwords from hints', () => {
+  const m = parseMovieFlag(['node', 'x', 'rip', '--movie', 'Trolls (2016)', '--runtime', '92']);
+  assert.deepEqual(m, { title: 'Trolls', year: 2016, runtimeMin: 92, hints: [] });
+});
+
+test('--movie keeps distinguishing words as hints', () => {
+  const m = parseMovieFlag(['--movie=The Secret of the Ooze (1991)']);
+  assert.deepEqual(m.hints, ['SECRET', 'OOZE']);
+  assert.equal(m.runtimeMin, null, 'runtime is optional');
+});
+
+test('--movie rejects a title without a year', () => {
+  assert.throws(() => parseMovieFlag(['--movie', 'Trolls']), /must look like/);
+});
+
+test('a single overriding movie matches any label by elimination', () => {
+  const only = [{ title: 'Trolls', year: 2016, runtimeMin: 92, hints: [] }];
+  const got = matchMovie('TROLLS', new Set(), only);
+  assert.equal(got.movie.title, 'Trolls');
+  assert.equal(got.byElimination, true);
 });

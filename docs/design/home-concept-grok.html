@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jellyfin Streamline — Home Concept (Grok)</title>
+  <style>
+    /* Matches css/view.css Streamline tokens — not the acid/cyan show-detail concept palette */
+    :root {
+      --sl-accent: #7c5cff;
+      --sl-accent-ink: #0a0713;
+      --sl-bg: #0b0b0d;
+      --sl-fg: #f4f4f6;
+      --sl-dim: #a8a8b3;
+      --sl-card: #16161a;
+      --sl-radius: 16px;
+      --sl-rail-pad: 16px;
+    }
+    * { box-sizing: border-box; }
+    html { background: #111114; color-scheme: dark; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--sl-fg);
+      background:
+        radial-gradient(ellipse at 12% 0%, rgba(124, 92, 255, 0.14), transparent 42%),
+        radial-gradient(ellipse at 90% 30%, rgba(124, 92, 255, 0.06), transparent 36%),
+        #111114;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    button { font: inherit; color: inherit; }
+    .gallery { padding: 32px 16px 72px; }
+    .concept-head { max-width: 400px; margin: 0 auto 20px; }
+    .concept-head small {
+      color: var(--sl-accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .concept-head h1 {
+      margin: 8px 0 0;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    .concept-head p {
+      margin: 8px 0 0;
+      color: var(--sl-dim);
+      font-size: 14px;
+      line-height: 1.45;
+      max-width: 36em;
+    }
+
+    /* Phone frame — ~400px content width, tablet gets a wider frame below */
+    .device {
+      width: min(100%, 400px);
+      height: 820px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 36px;
+      background: var(--sl-bg);
+      box-shadow: 0 28px 72px rgba(0, 0, 0, 0.55), inset 0 0 0 5px #050506;
+    }
+    .status {
+      position: absolute; z-index: 20; left: 0; right: 0; top: 0;
+      height: 34px; padding: 12px 22px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; font-weight: 700; pointer-events: none;
+    }
+    .screen {
+      height: 100%;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+      padding-bottom: 28px;
+    }
+    .screen::-webkit-scrollbar { display: none; }
+    .home-indicator {
+      position: absolute; z-index: 30; bottom: 8px; left: 50%;
+      width: 120px; height: 5px; border-radius: 8px;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.85);
+      pointer-events: none;
+    }
+
+    /* ---- Top bar: wordmark + search + avatar; no library folders / drawers ---- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 42px var(--sl-rail-pad) 12px;
+      background: linear-gradient(180deg, rgba(11, 11, 13, 0.96) 70%, rgba(11, 11, 13, 0));
+      backdrop-filter: blur(10px);
+    }
+    .wordmark {
+      flex: 1;
+      min-width: 0;
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+    .wordmark span { color: var(--sl-accent); }
+    .icon-btn {
+      flex: 0 0 auto;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .icon-btn:active { transform: scale(0.96); }
+    .icon-btn svg { width: 20px; height: 20px; fill: none; stroke: var(--sl-fg); stroke-width: 2; stroke-linecap: round; }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+      border: none;
+      border-radius: 50%;
+      padding: 0;
+      cursor: pointer;
+      background:
+        radial-gradient(circle at 35% 30%, #c4b5ff, transparent 45%),
+        linear-gradient(145deg, #5a3fd4, #1a1428 70%);
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.12);
+    }
+
+    /* ---- Section rails ---- */
+    .section {
+      padding: 22px 0 4px;
+    }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0 var(--sl-rail-pad);
+      margin-bottom: 12px;
+    }
+    .section-head h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .section-head a {
+      color: var(--sl-dim);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .rail {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 0 var(--sl-rail-pad) 6px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .rail::-webkit-scrollbar { display: none; }
+    .rail > * { scroll-snap-align: start; }
+
+    /* Continue Watching — landscape 16:9 cards, progress + episode sublabel */
+    .cw-card {
+      flex: 0 0 248px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border: none;
+      background: transparent;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+    }
+    .cw-thumb {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      border-radius: var(--sl-radius);
+      overflow: hidden;
+      background: var(--sl-card);
+    }
+    .cw-thumb::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+      pointer-events: none;
+    }
+    .play-fab {
+      position: absolute;
+      z-index: 2;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.94);
+      color: var(--sl-accent-ink);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      padding-left: 2px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    .progress {
+      position: absolute;
+      z-index: 2;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.22);
+    }
+    .progress > i {
+      display: block;
+      height: 100%;
+      background: var(--sl-accent);
+    }
+    .cw-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cw-sub {
+      margin-top: 2px;
+      color: var(--sl-dim);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* Poster rails — portrait cards, no borders / no folder chrome */
+    .poster-card {
+      flex: 0 0 118px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border: none;
+      background: transparent;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+    }
+    .poster {
+      aspect-ratio: 2 / 3;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--sl-card);
+    }
+    .poster-title {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Placeholder art — CSS gradients only */
+    .art-bb {
+      background:
+        radial-gradient(circle at 72% 28%, rgba(75, 180, 255, 0.75), transparent 8%),
+        linear-gradient(125deg, #06101c 18%, #0b3860 48%, #09111c 82%);
+    }
+    .art-bb::before {
+      content: "";
+      position: absolute;
+      inset: 18% 8% 22% 42%;
+      background: linear-gradient(45deg, transparent 0 38%, rgba(255, 49, 88, 0.85) 39% 48%, transparent 49%);
+      transform: rotate(-8deg);
+      clip-path: polygon(50% 0, 63% 31%, 96% 18%, 73% 49%, 100% 70%, 62% 65%, 52% 100%, 41% 66%, 2% 78%, 31% 50%, 7% 25%, 39% 33%);
+    }
+    .art-arcane {
+      background:
+        radial-gradient(ellipse at 40% 30%, rgba(255, 120, 60, 0.55), transparent 45%),
+        linear-gradient(160deg, #1a0a18, #3d1528 40%, #0c1624 75%);
+    }
+    .art-mandalorian {
+      background:
+        radial-gradient(circle at 55% 40%, rgba(180, 140, 80, 0.35), transparent 40%),
+        linear-gradient(150deg, #1c1810, #2a2418 50%, #0a0c10);
+    }
+    .art-poster-1 {
+      background:
+        linear-gradient(165deg, #2a1848 0%, #7c5cff 38%, #12081f 39% 62%, #c43b5a 63%);
+    }
+    .art-poster-2 {
+      background:
+        radial-gradient(circle at 70% 20%, rgba(80, 200, 255, 0.5), transparent 35%),
+        linear-gradient(145deg, #0d1a28, #163048 55%, #0a1018);
+    }
+    .art-poster-3 {
+      background:
+        linear-gradient(170deg, #1a1020, #4a2040 45%, #0e0a12 46% 70%, #d9a03a 71%);
+    }
+    .art-poster-4 {
+      background:
+        radial-gradient(ellipse at 30% 70%, rgba(124, 92, 255, 0.45), transparent 50%),
+        linear-gradient(130deg, #101018, #24203a 60%, #0b0b0d);
+    }
+    .art-poster-5 {
+      background:
+        linear-gradient(155deg, #201810, #6b3a18 40%, #120e0a 41% 68%, #e8c060 69%);
+    }
+    .art-poster-6 {
+      background:
+        radial-gradient(circle at 50% 35%, rgba(255, 90, 120, 0.4), transparent 40%),
+        linear-gradient(160deg, #180810, #2a1020 50%, #0a080c);
+    }
+    .art-movie-1 {
+      background:
+        linear-gradient(150deg, #0c1420, #1e3a5c 42%, #080c12 43% 72%, #7c5cff 73%);
+    }
+    .art-movie-2 {
+      background:
+        radial-gradient(ellipse at 60% 25%, rgba(255, 200, 80, 0.45), transparent 40%),
+        linear-gradient(170deg, #1a1408, #3a2810 50%, #0c0a08);
+    }
+    .art-movie-3 {
+      background:
+        linear-gradient(145deg, #101818, #1a4040 48%, #0a1010 49% 75%, #40c0a0 76%);
+    }
+    .art-movie-4 {
+      background:
+        radial-gradient(circle at 40% 40%, rgba(200, 60, 80, 0.5), transparent 45%),
+        linear-gradient(160deg, #140810, #280818 55%, #0a0608);
+    }
+    .art-movie-5 {
+      background:
+        linear-gradient(155deg, #0e1020, #283060 40%, #0a0c14 41% 70%, #a0b0ff 71%);
+    }
+
+    .divider {
+      width: min(100%, 720px);
+      margin: 48px auto 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 720px;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      height: 1px;
+      flex: 1;
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .divider small {
+      color: var(--sl-accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* Tablet-friendly wider frame — same home chrome, more rail breathing room */
+    .device.tablet {
+      width: min(100%, 720px);
+      height: 640px;
+      border-radius: 28px;
+    }
+    .device.tablet .topbar { padding-left: 24px; padding-right: 24px; }
+    .device.tablet .section-head,
+    .device.tablet .rail { padding-left: 24px; padding-right: 24px; }
+    .device.tablet .cw-card { flex-basis: 280px; }
+    .device.tablet .poster-card { flex-basis: 132px; }
+    .device.tablet .section { padding-top: 28px; }
+
+    @media (max-width: 440px) {
+      .gallery { padding: 0 0 48px; }
+      .concept-head, .divider { padding-left: 16px; padding-right: 16px; }
+      .device { border-radius: 0; border-left: 0; border-right: 0; height: 100dvh; min-height: 700px; }
+      .device.tablet { height: auto; min-height: 560px; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .device { animation: rise 0.55s ease both; }
+      .device.tablet { animation-delay: 0.08s; }
+      @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+    }
+  </style>
+</head>
+<body>
+  <main class="gallery">
+    <header class="concept-head">
+      <small>Jellyfin Streamline Concept</small>
+      <h1>Home — poster rails, not folders</h1>
+      <p>Streaming-app home: Continue Watching first, then Shows / Movies as horizontal poster rails. No library-tree chrome.</p>
+    </header>
+
+    <!-- Screen A: phone (~400px) — primary mobile target -->
+    <section class="device" aria-label="Home page concept — phone">
+      <div class="status"><span>9:41</span><span>● ◒ ▰</span></div>
+      <div class="screen">
+
+        <!-- Decision: sticky minimal top bar replaces Jellyfin's library/drawer chrome -->
+        <header class="topbar" aria-label="Home navigation">
+          <h1 class="wordmark">Stream<span>line</span></h1>
+          <button class="icon-btn" type="button" aria-label="Search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          </button>
+          <!-- Decision: profile avatar (44px) instead of settings-gear clutter in the primary chrome -->
+          <button class="avatar" type="button" aria-label="Profile"></button>
+        </header>
+
+        <!-- Decision: Continue Watching leads — resume is the highest-value home action -->
+        <section class="section" aria-labelledby="cw-heading">
+          <div class="section-head">
+            <h2 id="cw-heading">Continue Watching</h2>
+            <a href="#">See all</a>
+          </div>
+          <div class="rail" role="list">
+            <button class="cw-card" type="button" role="listitem">
+              <div class="cw-thumb art-bb">
+                <span class="play-fab" aria-hidden="true">▶</span>
+                <!-- Decision: accent progress bar on landscape thumb, Disney+/Netflix pattern -->
+                <span class="progress" aria-hidden="true"><i style="width:42%"></i></span>
+              </div>
+              <div>
+                <div class="cw-title">Batman Beyond</div>
+                <div class="cw-sub">S1:E3 · 12 min left</div>
+              </div>
+            </button>
+            <button class="cw-card" type="button" role="listitem">
+              <div class="cw-thumb art-arcane">
+                <span class="play-fab" aria-hidden="true">▶</span>
+                <span class="progress" aria-hidden="true"><i style="width:68%"></i></span>
+              </div>
+              <div>
+                <div class="cw-title">Arcane</div>
+                <div class="cw-sub">S2:E1 · 8 min left</div>
+              </div>
+            </button>
+            <button class="cw-card" type="button" role="listitem">
+              <div class="cw-thumb art-mandalorian">
+                <span class="play-fab" aria-hidden="true">▶</span>
+                <span class="progress" aria-hidden="true"><i style="width:25%"></i></span>
+              </div>
+              <div>
+                <div class="cw-title">The Mandalorian</div>
+                <div class="cw-sub">S3:E4 · 28 min left</div>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        <!-- Decision: Shows as portrait posters in a rail — no folder tiles, no borders -->
+        <section class="section" aria-labelledby="shows-heading">
+          <div class="section-head">
+            <h2 id="shows-heading">Shows</h2>
+            <a href="#">See all</a>
+          </div>
+          <div class="rail" role="list">
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-1"></div>
+              <div class="poster-title">Batman Beyond</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-2"></div>
+              <div class="poster-title">Arcane</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-3"></div>
+              <div class="poster-title">The Mandalorian</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-4"></div>
+              <div class="poster-title">Andor</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-5"></div>
+              <div class="poster-title">Severance</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-6"></div>
+              <div class="poster-title">Fallout</div>
+            </button>
+          </div>
+        </section>
+
+        <!-- Decision: Movies as a sibling poster rail — same density language as Shows -->
+        <section class="section" aria-labelledby="movies-heading">
+          <div class="section-head">
+            <h2 id="movies-heading">Movies</h2>
+            <a href="#">See all</a>
+          </div>
+          <div class="rail" role="list">
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-movie-1"></div>
+              <div class="poster-title">Dune: Part Two</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-movie-2"></div>
+              <div class="poster-title">Blade Runner 2049</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-movie-3"></div>
+              <div class="poster-title">Arrival</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-movie-4"></div>
+              <div class="poster-title">The Batman</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-movie-5"></div>
+              <div class="poster-title">Interstellar</div>
+            </button>
+          </div>
+        </section>
+
+      </div>
+      <div class="home-indicator"></div>
+    </section>
+
+    <div class="divider"><small>Tablet · same home, wider rails</small></div>
+
+    <!-- Screen B: tablet-friendly width — validates horizontal scroll still feels intentional -->
+    <section class="device tablet" aria-label="Home page concept — tablet">
+      <div class="status"><span>9:41</span><span>● ◒ ▰</span></div>
+      <div class="screen">
+        <header class="topbar" aria-label="Home navigation">
+          <h1 class="wordmark">Stream<span>line</span></h1>
+          <button class="icon-btn" type="button" aria-label="Search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          </button>
+          <button class="avatar" type="button" aria-label="Profile"></button>
+        </header>
+
+        <section class="section" aria-labelledby="cw-heading-t">
+          <div class="section-head">
+            <h2 id="cw-heading-t">Continue Watching</h2>
+            <a href="#">See all</a>
+          </div>
+          <div class="rail" role="list">
+            <button class="cw-card" type="button" role="listitem">
+              <div class="cw-thumb art-bb">
+                <span class="play-fab" aria-hidden="true">▶</span>
+                <span class="progress" aria-hidden="true"><i style="width:42%"></i></span>
+              </div>
+              <div>
+                <div class="cw-title">Batman Beyond</div>
+                <div class="cw-sub">S1:E3 · 12 min left</div>
+              </div>
+            </button>
+            <button class="cw-card" type="button" role="listitem">
+              <div class="cw-thumb art-arcane">
+                <span class="play-fab" aria-hidden="true">▶</span>
+                <span class="progress" aria-hidden="true"><i style="width:68%"></i></span>
+              </div>
+              <div>
+                <div class="cw-title">Arcane</div>
+                <div class="cw-sub">S2:E1 · 8 min left</div>
+              </div>
+            </button>
+            <button class="cw-card" type="button" role="listitem">
+              <div class="cw-thumb art-mandalorian">
+                <span class="play-fab" aria-hidden="true">▶</span>
+                <span class="progress" aria-hidden="true"><i style="width:25%"></i></span>
+              </div>
+              <div>
+                <div class="cw-title">The Mandalorian</div>
+                <div class="cw-sub">S3:E4 · 28 min left</div>
+              </div>
+            </button>
+            <button class="cw-card" type="button" role="listitem">
+              <div class="cw-thumb art-poster-2">
+                <span class="play-fab" aria-hidden="true">▶</span>
+                <span class="progress" aria-hidden="true"><i style="width:55%"></i></span>
+              </div>
+              <div>
+                <div class="cw-title">Andor</div>
+                <div class="cw-sub">S1:E6 · 15 min left</div>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="shows-heading-t">
+          <div class="section-head">
+            <h2 id="shows-heading-t">Shows</h2>
+            <a href="#">See all</a>
+          </div>
+          <div class="rail" role="list">
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-1"></div>
+              <div class="poster-title">Batman Beyond</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-2"></div>
+              <div class="poster-title">Arcane</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-3"></div>
+              <div class="poster-title">The Mandalorian</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-4"></div>
+              <div class="poster-title">Andor</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-5"></div>
+              <div class="poster-title">Severance</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-poster-6"></div>
+              <div class="poster-title">Fallout</div>
+            </button>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="movies-heading-t">
+          <div class="section-head">
+            <h2 id="movies-heading-t">Movies</h2>
+            <a href="#">See all</a>
+          </div>
+          <div class="rail" role="list">
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-movie-1"></div>
+              <div class="poster-title">Dune: Part Two</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-movie-2"></div>
+              <div class="poster-title">Blade Runner 2049</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-movie-3"></div>
+              <div class="poster-title">Arrival</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-movie-4"></div>
+              <div class="poster-title">The Batman</div>
+            </button>
+            <button class="poster-card" type="button" role="listitem">
+              <div class="poster art-movie-5"></div>
+              <div class="poster-title">Interstellar</div>
+            </button>
+          </div>
+        </section>
+      </div>
+      <div class="home-indicator"></div>
+    </section>
+  </main>
+</body>
+</html>

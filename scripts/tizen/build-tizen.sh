@@ -68,6 +68,33 @@ grep -q "streamline-body-start" "$WORKDIR/www/index.html" \
   || fail "www/index.html lost the Streamline injection -- jellyfin-tizen did not take the prebuilt client"
 echo "theme present in staged www/"
 
+# Installing a package wipes the app's storage, which drops the configured
+# server and the sign-in every single time. Seeding the server address into a
+# fresh install leaves only the sign-in to redo.
+#
+# Deliberately seeds the ADDRESS ONLY, never an access token: a token baked into
+# a .wgt is a credential sitting in a file, and the package gets copied around.
+if [ -n "${SL_TV_SERVER:-}" ]; then
+  SEED_FILE="$WORKDIR/www/streamline-server-seed.js"
+  cat > "$SEED_FILE" <<SEED
+(function () {
+  try {
+    var KEY = 'jellyfin_credentials';
+    // Never clobber a working configuration -- only help a fresh install.
+    var existing = localStorage.getItem(KEY);
+    if (existing && JSON.parse(existing).Servers && JSON.parse(existing).Servers.length) return;
+    localStorage.setItem(KEY, JSON.stringify({
+      Servers: [{ ManualAddress: '${SL_TV_SERVER}', manualAddressOnly: true, LastConnectionMode: 2, DateLastAccessed: 0 }]
+    }));
+  } catch (e) {}
+})();
+SEED
+  # Must run before the app bundles read credentials, so inject into <head>.
+  /usr/bin/sed -i '' 's|<!--streamline-head-start-->|<script src="streamline-server-seed.js"></script><!--streamline-head-start-->|' "$WORKDIR/www/index.html"
+  grep -q "streamline-server-seed.js" "$WORKDIR/www/index.html" || fail "failed to inject server seed"
+  echo "SL_TV_SERVER: pre-seeding ${SL_TV_SERVER} for fresh installs"
+fi
+
 # .wgt packaging is the Tizen CLI's job, not npm's, and signing needs a Samsung
 # certificate profile created in Tizen Studio's Certificate Manager.
 tizen build-web -e ".*" -e "README.md" -e "node_modules/*" -- "$WORKDIR"

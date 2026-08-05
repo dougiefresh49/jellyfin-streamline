@@ -1,0 +1,64 @@
+# Courage the Cowardly Dog — episode titles from booklet (Complete Series, Cartoon Network)
+# Each episode = two 11-min segments (joined here with " & "). MakeMKV rips 1 file per ~22-min episode.
+# Jellyfin matches on SxxExx and pulls official titles from TMDB, so these titles are cosmetic.
+# Disc splits per booklet noted for mapping ripped folders to episode ranges.
+
+# SEASON 1  (Disc 1 = eps 1-8, Disc 2 = eps 9-13)
+S01E01|A Night at the Katz Motel & Cajun Granny Stew
+S01E02|The Shadow of Courage & Dr. Le Quack
+S01E03|Courage Meets Bigfoot & Hothead
+S01E04|The Demon in the Mattress & Freaky Fred
+S01E05|Night of the Weremole & Mother's Day
+S01E06|The Duck Brothers & Shirley the Medium
+S01E07|King Ramses' Curse & The Clutching Foot
+S01E08|The Hunchback of Nowhere & The Gods Must Be Goosey
+S01E09|Queen of the Black Puddle & Everyone Wants to Direct
+S01E10|The Snowman Cometh & The Precious, Wonderful, Adorable, Lovable Duckling
+S01E11|Heads of Beef & Klub Katz
+S01E12|The Revenge of the Chicken from Outer Space & Journey to the Center of Nowhere
+S01E13|Little Muriel & The Great Fusilli
+
+# SEASON 2  (Disc 1 = eps 1-7, Disc 2 = eps 8-13)
+S02E01|The Magic Tree of Nowhere & Robot Randy
+S02E02|The Curse of Shirley & Courage in the Big Stinkin' City
+S02E03|Family Business & One Thousand Years of Courage
+S02E04|Courage Meets the Mummy & Invisible Muriel
+S02E05|The Human Habitrail & Mission to the Sun
+S02E06|Courage the Fly & Katz Kandy
+S02E07|Nowhere T.V. & Mega Muriel the Magnificent
+S02E08|Bad Hair Day & The Forbidden Hat of Gold
+S02E09|Serpent of the Evil River & The Transplant
+S02E10|Car Broke. Phone. Yes? & Cowboy Courage
+S02E11|Evil Weevil & McPhearson Phantom
+S02E12|House of Discontent & The Sand Whale Strikes
+S02E13|The Tower of Dr. Zalost
+
+# SEASON 3  (Disc 1 = eps 1-7, Disc 2 = eps 8-13)
+S03E01|Muriel Meets Her Match & Courage vs. Mecha-Courage
+S03E02|Campsite of Terror & Record Deal
+S03E03|Stormy Weather & The Sandman Sleeps
+S03E04|Hard Drive Courage & The Ride of the Valkyries
+S03E05|Scuba-Scuba Doo & Conway the Contaminationist
+S03E06|Katz Under the Sea & Curtain of Cruelty
+S03E07|Feast of the Bullfrogs & Tulip's Worm
+S03E08|So in Louvre Are We Two & Night of the Scarecrow
+S03E09|Mondo Magic & Watch the Birdies
+S03E10|Fishy Business & Angry Nasty People
+S03E11|Dome of Doom & Snowman's Revenge
+S03E12|The Quilt Club & Swindlin' Wind
+S03E13|King of Flan & Courage Under the Volcano
+
+# SEASON 4  (Disc 1 = eps 1-7, Disc 2 = eps 8-13)
+S04E01|A Beaver's Tale & The Nutcracker
+S04E02|Rumpledkiltskin & Housecalls
+S04E03|Le Quack Balloon & Windmill Vandals
+S04E04|The Uncommon Cold & Farmer-Hunter, Farmer-Hunted
+S04E05|Bride of the Swamp Monster & Goat Pain
+S04E06|Muriel Blows Up & Profiles in Courage
+S04E07|The Mask
+S04E08|Squatting Tiger, Hidden Dog & Muted Muriel
+S04E09|Aqua-Farmer & Food of the Dragon
+S04E10|Last of the Starmakers & Son of the Chicken from Outer Space
+S04E11|Courageous Cure & Ball of Revenge
+S04E12|Cabaret Courage & Wrath of the Librarian
+S04E13|Remembrance of Courage Past & Perfect

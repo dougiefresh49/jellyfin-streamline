@@ -27,7 +27,46 @@ import {
 import { parseRobotLine } from './lib/robot.mjs';
 import { MEDIA_ROOT } from './config.mjs';
 
-/** What we expect to find in the drives this run. */
+/**
+ * Words too common across a franchise to identify a disc on their own — a label
+ * reading "TROLLS" cannot pick between three Trolls films.
+ */
+const FRANCHISE_STOPWORDS = new Set(['THE', 'A', 'AN', 'OF', 'AND', 'PART', 'TROLLS']);
+
+/**
+ * `--movie "Trolls (2016)" --runtime 92` replaces the built-in list for a run,
+ * so ripping a disc nobody has ripped before needs no code edit.
+ */
+export function parseMovieFlag(argv) {
+  const read = (name) => {
+    const eq = argv.find((a) => a.startsWith(`--${name}=`));
+    if (eq) return eq.slice(name.length + 3);
+    const i = argv.indexOf(`--${name}`);
+    return i >= 0 ? argv[i + 1] : undefined;
+  };
+  const spec = read('movie');
+  if (!spec) return null;
+
+  const match = /^(.*?)\s*\((\d{4})\)\s*$/.exec(spec);
+  if (!match) throw new Error(`--movie must look like "Title (Year)", got: ${spec}`);
+  const [, title, year] = match;
+  const runtime = read('runtime');
+  if (runtime !== undefined && !(Number(runtime) > 0)) {
+    throw new Error(`--runtime must be a positive number of minutes, got: ${runtime}`);
+  }
+  const hints = title.toUpperCase().split(/[^A-Z0-9]+/)
+    .filter((w) => w.length > 1 && !FRANCHISE_STOPWORDS.has(w));
+  return {
+    title: title.trim(),
+    year: Number(year),
+    // Without a runtime the duration check cannot run; the feature-length bounds
+    // in pickMainTitle still apply, and the ripped duration is reported.
+    runtimeMin: runtime === undefined ? null : Number(runtime),
+    hints,
+  };
+}
+
+/** Default expectations; --movie overrides them for a single-disc run. */
 const EXPECTED = [
   {
     title: 'Trolls World Tour',
@@ -134,19 +173,19 @@ function pickMainTitle(titles) {
 }
 
 /** Match a disc label to one of the expected movies; refuse when unsure. */
-function matchMovie(discLabel, taken) {
+function matchMovie(discLabel, taken, expected = EXPECTED) {
   const label = String(discLabel || '').toUpperCase();
-  const scored = EXPECTED.map((movie) => ({
+  const scored = expected.map((movie) => ({
     movie,
     score: movie.hints.filter((hint) => label.includes(hint)).length,
   })).sort((a, b) => b.score - a.score);
 
-  if (scored[0].score > 0 && scored[0].score > scored[1].score) {
+  if (scored[0] && scored[0].score > 0 && scored[0].score > (scored[1]?.score ?? -1)) {
     return { movie: scored[0].movie };
   }
   // Label was unhelpful (many DVDs ship a generic one). If only one expected
   // movie is still unclaimed, that is the answer by elimination.
-  const remaining = EXPECTED.filter((m) => !taken.has(folderName(m)));
+  const remaining = expected.filter((m) => !taken.has(folderName(m)));
   if (remaining.length === 1) {
     return { movie: remaining[0], byElimination: true };
   }
@@ -311,7 +350,7 @@ function ffprobeDuration(file) {
 }
 
 /** Survey both drives without touching anything. */
-async function buildPlan({ want = 2 } = {}) {
+async function buildPlan({ want = 2, expected = EXPECTED } = {}) {
   const loaded = await waitForDiscs({ want });
   const taken = new Set();
   const plan = [];
@@ -328,7 +367,7 @@ async function buildPlan({ want = 2 } = {}) {
       entry.mainTitle = picked.title;
       entry.duplicates = picked.duplicates;
 
-      const matched = matchMovie(entry.discLabel, taken);
+      const matched = matchMovie(entry.discLabel, taken, expected);
       if (matched.error) throw new Error(matched.error);
       entry.movie = matched.movie;
       entry.byElimination = Boolean(matched.byElimination);
@@ -378,16 +417,21 @@ async function ripOne(entry) {
 
   // Verify against the content, not against the name we chose.
   const actual = await ffprobeDuration(staged);
-  const expected = entry.movie.runtimeMin * 60;
-  const drift = Math.abs(actual - expected) / expected;
-  if (drift > LIMITS.durationTolerance) {
-    throw new Error(
-      `${name}: ripped ${fmtDuration(actual)} but ${entry.movie.title} runs ~${entry.movie.runtimeMin}m ` +
-      `(${Math.round(drift * 100)}% off) — left in staging for review`,
-    );
-  }
   const bytes = (await stat(staged)).size;
-  log(`  ${name}: verified ${fmtDuration(actual)}, ${(bytes / 1e9).toFixed(2)} GB`);
+  if (entry.movie.runtimeMin) {
+    const expected = entry.movie.runtimeMin * 60;
+    const drift = Math.abs(actual - expected) / expected;
+    if (drift > LIMITS.durationTolerance) {
+      throw new Error(
+        `${name}: ripped ${fmtDuration(actual)} but ${entry.movie.title} runs ~${entry.movie.runtimeMin}m ` +
+        `(${Math.round(drift * 100)}% off) — left in staging for review`,
+      );
+    }
+    log(`  ${name}: verified ${fmtDuration(actual)}, ${(bytes / 1e9).toFixed(2)} GB`);
+  } else {
+    // No published runtime given, so this is unverified rather than verified.
+    log(`  ${name}: ripped ${fmtDuration(actual)}, ${(bytes / 1e9).toFixed(2)} GB (no --runtime to check against)`);
+  }
 
   const destDir = path.join(LIBRARY_MOVIES, name);
   await mkdir(destDir, { recursive: true });
@@ -412,9 +456,15 @@ async function main() {
   const discsFlag = process.argv.find((a) => a.startsWith('--discs='));
   const want = discsFlag ? Number(discsFlag.split('=')[1]) : 2;
   if (!Number.isInteger(want) || want < 1) throw new Error('--discs= must be a positive integer');
+  const override = parseMovieFlag(process.argv);
+  const expected = override ? [override] : EXPECTED;
+  if (override) {
+    log(`expecting one disc: ${folderName(override)}` +
+        (override.runtimeMin ? ` (~${override.runtimeMin}m)` : ' (no runtime check)'));
+  }
 
   log(`waiting for ${want} disc(s) (close the trays)...`);
-  const plan = await buildPlan({ want });
+  const plan = await buildPlan({ want, expected });
   printPlan(plan);
 
   const ready = plan.filter((e) => !e.error);

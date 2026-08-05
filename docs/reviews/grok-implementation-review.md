@@ -20,7 +20,7 @@ api().getSeasons(item.Id, { userId: uid, Fields: 'ChildCount' })
 Better UX: after `getEpisodes`, set the count from `er.Items.length` / `TotalRecordCount` so the rail stays honest even if `ChildCount` is missing.
 
 **2. Episode-row “play” is not play**  
-`location.hash = '#/details?id=' + ep.Id` leaves the kids view and opens native episode details. That is navigation, not playback, and it fails must-fix (e) (“resolve concrete episode” and play it).
+`location.hash = '#/details?id=' + ep.Id` leaves the Streamline view and opens native episode details. That is navigation, not playback, and it fails must-fix (e) (“resolve concrete episode” and play it).
 
 Concrete fix options (in order of robustness):
 1. Prefer a hidden native control on the series page if you can bind one with the episode id (hard).
@@ -71,7 +71,7 @@ Confirmed. Structure today:
 
 - section `<h2>Next up</h2>`
 - card title also `"Next up"` / `"Continue watching"`
-- episode name buried in `.kd-c-sub`
+- episode name buried in `.sl-c-sub`
 
 Fix: card primary = episode name (or `S1:E3 · Name`); section h2 alone carries “Next up” / “Continue watching”. Drop the duplicate title inside the card.
 
@@ -87,7 +87,7 @@ Series DTOs almost never carry a useful `PlaybackPositionTicks`. Label stays “
 Fix: retry `nativePlay` briefly, or wait until `.mainDetailButtons .btnPlay:not(.hide)` exists before enabling the pill (disable Play until then).
 
 **8. No in-hero Back (known)**  
-Overlay sits inside `#itemDetailPage`; skin header back may still work on desktop, but mobile/fullscreen kids layout often needs an explicit hero back (`history.back()` or Jellyfin’s back handler). Missing for the “tight header / Netflix” goal.
+Overlay sits inside `#itemDetailPage`; skin header back may still work on desktop, but mobile/fullscreen Streamline layout often needs an explicit hero back (`history.back()` or Jellyfin’s back handler). Missing for the “tight header / Netflix” goal.
 
 ---
 
