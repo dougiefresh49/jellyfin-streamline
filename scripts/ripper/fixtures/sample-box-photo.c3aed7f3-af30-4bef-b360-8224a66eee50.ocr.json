@@ -1,0 +1,26 @@
+[
+  {
+    "slot": "blue",
+    "series": "Teenage Mutant Ninja Turtles",
+    "volume_number": 2,
+    "volume_title": "Meet Casey Jones",
+    "episodes": [
+      "Meet Casey Jones",
+      "Nano",
+      "Darkness on the Edge of Town"
+    ],
+    "confidence": 0.95
+  },
+  {
+    "slot": "red",
+    "series": "Teenage Mutant Ninja Turtles",
+    "volume_number": 1,
+    "volume_title": "Attack of the Mousers",
+    "episodes": [
+      "Things Change",
+      "A Better Mousetrap",
+      "Attack of the Mousers"
+    ],
+    "confidence": 0.95
+  }
+]

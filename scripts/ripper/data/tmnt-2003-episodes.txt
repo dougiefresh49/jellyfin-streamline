@@ -1,0 +1,121 @@
+# Teenage Mutant Ninja Turtles (2003) — canonical episode list, seasons 1-5 (Wikipedia, fetched 2026-07-18)
+# Multi-part arcs numbered 'Part N' (consecutive duplicate titles in source). Seasons 6-7 (Fast Forward / Back to the Sewer) not included; append if the DVD volumes reach them.
+# SEASON 3 NUMBERING FOLLOWS TMDb (themoviedb.org/tv/2284), which is what Jellyfin matches.
+# TMDb differs from Turtlepedia/broadcast for S3: 'The Christmas Aliens' is E12 (not E01),
+# everything before it shifts down one, and 'The Lesson'(E11)/'New Blood'(E13) swap. Verified 2026-07-20.
+S01E01|Things Change
+S01E02|A Better Mousetrap
+S01E03|Attack of the Mousers
+S01E04|Meet Casey Jones
+S01E05|Nano
+S01E06|Darkness on the Edge of Town
+S01E07|The Way of Invisibility
+S01E08|Fallen Angel
+S01E09|Garbageman
+S01E10|The Shredder Strikes, Part 1
+S01E11|The Shredder Strikes, Part 2
+S01E12|The Unconvincing Turtle Titan
+S01E13|Notes from the Underground, Part 1
+S01E14|Notes from the Underground, Part 2
+S01E15|Notes from the Underground, Part 3
+S01E16|The King
+S01E17|The Shredder Strikes Back, Part 1
+S01E18|The Shredder Strikes Back, Part 2
+S01E19|Tales of Leo
+S01E20|The Monster Hunter
+S01E21|Return to New York, Part 1
+S01E22|Return to New York, Part 2
+S01E23|Return to New York, Part 3
+S01E24|Lone Raph and Cub
+S01E25|The Search for Splinter, Part 1
+S01E26|The Search for Splinter, Part 2
+S02E01|Turtles in Space, Part 1: The Fugitoid
+S02E02|Turtles in Space, Part 2: The Trouble with Triceratons
+S02E03|Turtles in Space, Part 3: The Big House
+S02E04|Turtles in Space, Part 4: The Arena
+S02E05|Turtles in Space, Part 5: Triceraton Wars
+S02E06|Secret Origins, Part 1
+S02E07|Secret Origins, Part 2
+S02E08|Secret Origins, Part 3
+S02E09|Reflections
+S02E10|The Ultimate Ninja
+S02E11|Modern Love: The Return of Nano
+S02E12|What a Croc!
+S02E13|Return to the Underground
+S02E14|City at War, Part 1
+S02E15|City at War, Part 2
+S02E16|City at War, Part 3
+S02E17|Junklantis
+S02E18|The Golden Puck
+S02E19|Rogue in the House, Part 1
+S02E20|Rogue in the House, Part 2
+S02E21|April's Artifact
+S02E22|Return of the Justice Force
+S02E23|The Big Brawl, Part 1
+S02E24|The Big Brawl, Part 2
+S02E25|The Big Brawl, Part 3
+S02E26|The Big Brawl, Part 4
+S03E01|Space Invaders, Part 1
+S03E02|Space Invaders, Part 2
+S03E03|Space Invaders, Part 3
+S03E04|Worlds Collide, Part 1
+S03E05|Worlds Collide, Part 2
+S03E06|Worlds Collide, Part 3
+S03E07|Touch and Go
+S03E08|Hunted
+S03E09|H.A.T.E.
+S03E10|Nobody's Fool
+S03E11|The Lesson
+S03E12|The Christmas Aliens
+S03E13|New Blood
+S03E14|The Darkness Within
+S03E15|Mission of Gravity
+S03E16|The Entity Below
+S03E17|Time Travails
+S03E18|Hun on the Run
+S03E19|Reality Check
+S03E20|Across the Universe
+S03E21|Same As It Never Was
+S03E22|The Real World, Part 1
+S03E23|The Real World, Part 2
+S03E24|Bishop's Gambit
+S03E25|Exodus, Part 1
+S03E26|Exodus, Part 2
+S04E01|Cousin Sid
+S04E02|The People's Choice
+S04E03|A Wing and a Prayer
+S04E04|Sons of the Silent Age
+S04E05|Dragon's Brew
+S04E06|I, Monster
+S04E07|Grudge Match
+S04E08|All Hallows Thieves
+S04E09|Bad Day
+S04E10|Aliens Among Us
+S04E11|Dragons Rising
+S04E12|Still Nobody
+S04E13|Samurai Tourist
+S04E14|The Ancient One
+S04E15|Scion of the Shredder
+S04E16|Prodigal Son
+S04E17|Outbreak
+S04E18|Trouble with Augie
+S04E19|Insane in the Membrane
+S04E20|Tale of Master Yoshi
+S04E21|Return of Savanti, Part 1
+S04E22|Return of Savanti, Part 2
+S04E23|Adventures in Turtle Sitting
+S04E24|Good Genes, Part 1
+S04E25|Good Genes, Part 2
+S04E26|Ninja Tribunal
+S05E01|Lap of the Gods
+S05E02|Demons and Dragons
+S05E03|Legend of the 5 Dragons
+S05E04|More Worlds Than One
+S05E05|Beginning of the End
+S05E06|Membership Drive
+S05E07|New World Order, Part 1
+S05E08|New World Order, Part 2
+S05E09|Fathers and Sons
+S05E10|Past and Present
+S05E11|Enter the Dragons, Part 1
+S05E12|Enter the Dragons, Part 2
