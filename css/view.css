@@ -584,19 +584,20 @@ html.layout-tv #streamline-detail { position: fixed; }
    across the freed middle of the bar. */
 .videoOsdBottom .osdVolumeSliderContainer { flex-grow: 0; }
 
-/* Phones: transport floats mid-screen, bar keeps slider + secondary actions.
-   Volume is the phone's own buttons; next-episode has the up-next card. */
-@media (max-width: 53.75em) {
-  .videoOsdBottom .buttons { min-height: 0; }
-  .videoOsdBottom .buttons > div[dir="ltr"] {
-    position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); gap: 1.6em;
-  }
-  .videoOsdBottom .btnNextTrack { display: none !important; }
-  .videoOsdBottom .volumeButtons { display: none !important; }
-  .videoOsdBottom .btnRewind .material-icons,
-  .videoOsdBottom .btnFastForward .material-icons { font-size: 2.4em; }
-  .videoOsdBottom .btnPause .material-icons { font-size: 2.9em; }
+/* Phones/tablets: transport floats mid-screen, bar keeps slider + secondary
+   actions. Volume is the device's own buttons; next-episode has the up-next
+   card. Keyed off jellyfin's own layout-mobile class, NOT a width breakpoint --
+   a large phone in landscape is ~915 CSS px, which sailed past the 860px
+   media query this first shipped with while still being a phone. */
+html.layout-mobile .videoOsdBottom .buttons { min-height: 0; }
+html.layout-mobile .videoOsdBottom .buttons > div[dir="ltr"] {
+  position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); gap: 1.6em;
 }
+html.layout-mobile .videoOsdBottom .btnNextTrack { display: none !important; }
+html.layout-mobile .videoOsdBottom .volumeButtons { display: none !important; }
+html.layout-mobile .videoOsdBottom .btnRewind .material-icons,
+html.layout-mobile .videoOsdBottom .btnFastForward .material-icons { font-size: 2.4em; }
+html.layout-mobile .videoOsdBottom .btnPause .material-icons { font-size: 2.9em; }
 
 /* 10-foot sizing. The TV reports a desktop-width viewport, so the phone media
    queries never fire there; scale explicitly, and drop controls that make no
