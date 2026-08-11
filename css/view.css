@@ -527,3 +527,126 @@ html.layout-tv #streamline-detail::-webkit-scrollbar { width: 0; height: 0; disp
    scrolling internally, and Jellyfin's markup stays in the DOM for playback
    delegation -- just covered. */
 html.layout-tv #streamline-detail { position: fixed; }
+
+/* ==================== Player: modern OSD ==================== */
+/* Jellyfin 10.11 shows chapter-step buttons (undo/redo icons) whenever the item
+   has chapters -- every DVD rip does -- and generic rewind/fast-forward glyphs
+   for what are really fixed 10s/30s skips. Restyle to the layout the big apps
+   trained everyone on: a centered [back-10 | play | forward-10 | next-episode]
+   transport, times and secondary controls at the edges, and on narrow screens
+   the transport floats mid-screen like the Netflix/Prime phone players. DOM
+   order is untouched, so D-pad focus order on TV is unchanged.
+
+   Cascade note: the player's own chunk CSS is lazy-loaded AFTER this sheet, and
+   the Ultrachromic base theme also competes, so several rules below carry extra
+   specificity or !important on purpose -- lower-key versions verified to lose. */
+
+.videoOsdBottom .btnPreviousChapter,
+.videoOsdBottom .btnNextChapter,
+.videoOsdBottom .btnPreviousTrack { display: none !important; }
+
+/* Rewind/FF became the primary transport; jellyfin's own CSS hides them under
+   50em. The .buttons hop is for specificity over that rule. */
+@media (max-width: 50em) {
+  .videoOsdBottom .buttons .btnRewind,
+  .videoOsdBottom .buttons .btnFastForward { display: inline-flex !important; }
+}
+
+/* The stock glyphs say "fast forward" but the action is a fixed skip. Use the
+   circled-10 icons (codepoints from the bundled material set). theme.js seeds
+   skipForwardLength to 10s so the forward glyph tells the truth. */
+.videoOsdBottom .btnRewind .material-icons.fast_rewind::before { content: "\e059"; }
+.videoOsdBottom .btnFastForward .material-icons.fast_forward::before { content: "\e056"; }
+
+/* Center the transport over the bar regardless of what lives at the edges --
+   flex can't center a middle item when the flanks are unequal. */
+.videoOsdBottom .buttons { position: relative; min-height: 4.6em; flex-wrap: nowrap; }
+.videoOsdBottom .buttons > div[dir="ltr"] {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: flex; align-items: center; gap: .4em;
+}
+/* Next-episode rides just outside the trio so play stays dead-center. Its
+   containing block is the transformed transport div. */
+.videoOsdBottom .buttons > div[dir="ltr"] .btnNextTrack {
+  position: absolute; left: 100%; top: 50%; transform: translateY(-50%); margin-left: 1.1em;
+}
+.videoOsdBottom .btnRewind .material-icons,
+.videoOsdBottom .btnFastForward .material-icons,
+.videoOsdBottom .btnNextTrack .material-icons { font-size: 2.1em; }
+.videoOsdBottom .buttons button.btnPause {
+  background: rgba(255, 255, 255, .14);
+  border-radius: 50% !important;   /* Ultrachromic pins 5px on emby buttons */
+  aspect-ratio: 1 / 1;
+}
+.videoOsdBottom .btnPause .material-icons { font-size: 2.5em; }
+
+/* With the transport out of flow the volume slider's flex-grow would stretch
+   across the freed middle of the bar. */
+.videoOsdBottom .osdVolumeSliderContainer { flex-grow: 0; }
+
+/* Phones: transport floats mid-screen, bar keeps slider + secondary actions.
+   Volume is the phone's own buttons; next-episode has the up-next card. */
+@media (max-width: 53.75em) {
+  .videoOsdBottom .buttons { min-height: 0; }
+  .videoOsdBottom .buttons > div[dir="ltr"] {
+    position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%); gap: 1.6em;
+  }
+  .videoOsdBottom .btnNextTrack { display: none !important; }
+  .videoOsdBottom .volumeButtons { display: none !important; }
+  .videoOsdBottom .btnRewind .material-icons,
+  .videoOsdBottom .btnFastForward .material-icons { font-size: 2.4em; }
+  .videoOsdBottom .btnPause .material-icons { font-size: 2.9em; }
+}
+
+/* 10-foot sizing. The TV reports a desktop-width viewport, so the phone media
+   queries never fire there; scale explicitly, and drop controls that make no
+   sense on a television (its remote owns volume; no window to un-fullscreen). */
+html.layout-tv .videoOsdBottom { padding-bottom: 2.25em; }
+html.layout-tv .videoOsdBottom .buttons { min-height: 5.4em; }
+html.layout-tv .videoOsdBottom .buttons > div[dir="ltr"] { gap: .9em; }
+html.layout-tv .videoOsdBottom .btnRewind .material-icons,
+html.layout-tv .videoOsdBottom .btnFastForward .material-icons,
+html.layout-tv .videoOsdBottom .btnNextTrack .material-icons { font-size: 2.6em; }
+html.layout-tv .videoOsdBottom .btnPause .material-icons { font-size: 3em; }
+html.layout-tv .videoOsdBottom .volumeButtons,
+html.layout-tv .videoOsdBottom .btnPip,
+html.layout-tv .videoOsdBottom .btnAirPlay,
+html.layout-tv .videoOsdBottom .btnFullscreen { display: none !important; }
+
+/* ==================== Player: up-next card ==================== */
+/* Stock dialog is a 30em translucent slab with fixed-width children and
+   gray-on-gray buttons. Compact rounded card instead; the media-info row (star
+   ratings) is clutter at the moment of "keep watching?". The opacity transition
+   must survive -- hide() waits on transitionend. Width caps use vw because the
+   TV font scaling below compounds em-based caps into slab territory. */
+.upNextContainer {
+  width: auto; max-width: min(26em, 92vw) !important; min-width: 19em;
+  background: rgba(15, 15, 18, .92);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 14px;
+  padding: 1em 1.25em 1.1em;
+  margin: 0 1.25em 1.5em 0;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .5);
+  transition: opacity .3s ease-out, transform .3s ease-out;
+}
+.upNextDialog-hidden { transform: translateY(10px); }
+.upNextContainer > .flex.flex-grow { min-width: 0; }
+.upNextContainer .upNextDialog-nextVideoText { font-size: .95em; font-weight: 500; opacity: .75; }
+.upNextContainer .upNextDialog-countdownText { opacity: 1; color: #fff; }
+.upNextContainer .upNextDialog-title {
+  width: auto; max-width: 100%; font-size: 1.05em; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.upNextContainer .upNextDialog-mediainfo { display: none !important; }
+.upNextContainer .upNextDialog-buttons { width: auto; gap: .6em; margin-top: .5em !important; }
+.upNextContainer .upNextDialog-buttons .upNextDialog-button {
+  border-radius: 999px !important; padding: .45em 1.5em; font-weight: 600;
+}
+.upNextContainer .upNextDialog-buttons .btnStartNow { background: #7c5cff !important; color: #fff !important; }
+.upNextContainer .upNextDialog-buttons .btnHide { background: rgba(255, 255, 255, .12) !important; color: #fff !important; }
+
+html.layout-tv .upNextContainer {
+  font-size: 1.25em;
+  max-width: min(26em, 36vw) !important;
+  margin: 0 2.25em 2.25em 0;
+}

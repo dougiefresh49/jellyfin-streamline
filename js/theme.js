@@ -225,6 +225,29 @@
     });
     return entry.inflight;
   }
+  // The OSD's fast-forward is a fixed skip whose length comes from the user
+  // setting skipForwardLength (default 30s). The theme's player styling draws
+  // that button as a circled 10, so the behavior has to match. Seed 10s ONCE
+  // per user, only when they have never chosen a value themselves -- a later
+  // explicit choice (5s..30s in Display settings) is theirs and stays.
+  function seedSkipLength() {
+    var uid = userId();
+    if (!uid) return;
+    var mark = 'sl.skipSeed.' + uid;
+    try { if (localStorage.getItem(mark)) return; } catch (e) { return; }
+    api().getDisplayPreferences('usersettings', uid, 'emby').then(function (prefs) {
+      if (!prefs || uid !== userId()) return;
+      prefs.CustomPrefs = prefs.CustomPrefs || {};
+      if (prefs.CustomPrefs.skipForwardLength != null) {
+        try { localStorage.setItem(mark, '1'); } catch (e) {}
+        return;
+      }
+      prefs.CustomPrefs.skipForwardLength = '10000';
+      return api().updateDisplayPreferences('usersettings', prefs, uid, 'emby').then(function () {
+        try { localStorage.setItem(mark, '1'); } catch (e) {}
+      });
+    }).catch(function () {});
+  }
   function ticksToMin(t) { return Math.round((t || 0) / 600000000); }
   function el(tag, attrs, children) {
     var svgTags = { svg: true, circle: true, path: true };
@@ -1154,7 +1177,8 @@
         );
       }, 3000);
     }
-    hashHandler = function () { onRoute(); };
+    hashHandler = function () { seedSkipLength(); onRoute(); };
+    seedSkipLength();
     homeAuthSignalHandler = function () {
       if (!isHomeRoute() || userId()) return;
       homeAuthTries = 0;
