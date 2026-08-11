@@ -351,6 +351,14 @@
     if (!requested) return;
     var request = ++playRequest;
     if (playPollTimer !== null) { cancelTimeout(playPollTimer); playPollTimer = null; }
+    // The route can update while the OLD detail page is still the visible one
+    // (view transition), and both pages carry an identical .btnPlay. Clicking
+    // during that window plays the SERIES resume target (Next Up) instead of
+    // the tapped episode. Remember the outgoing page and refuse to click it;
+    // jellyfin alternates detail-view elements, so the destination is a
+    // different node. After the transition window has safely passed, accept
+    // whatever is visible rather than never playing at all.
+    var pageAtStart = visibleDetailPage();
     location.hash = '#/details?id=' + encodeURIComponent(requested);
     var tries = 0;
     (function poll() {
@@ -358,7 +366,8 @@
       var routeId = currentDetailId();
       var p = visibleDetailPage();
       var btn = p && p.querySelector('.mainDetailButtons .btnPlay:not(.hide), .mainDetailButtons .btnReplay:not(.hide)');
-      if (routeId === requested && btn) { playPollTimer = null; btn.click(); return; }
+      var settled = p && (p !== pageAtStart || tries > 15);
+      if (routeId === requested && btn && settled) { playPollTimer = null; btn.click(); return; }
       if (tries++ < 40) playPollTimer = scheduleTimeout(function () { playPollTimer = null; poll(); }, 120);
     })();
   }
