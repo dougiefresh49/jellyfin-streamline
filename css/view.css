@@ -651,3 +651,20 @@ html.layout-tv .upNextContainer {
   max-width: min(26em, 36vw) !important;
   margin: 0 2.25em 2.25em 0;
 }
+
+/* ==================== Player: skip-intro pill ==================== */
+/* jellyfin-web's native media-segment prompt (.skip-button) is a gray box
+   pushed to the bottom-RIGHT. Netflix habit says bottom-left above the track:
+   flip the auto margin, make it a pill. Segments come from the Intro Skipper
+   plugin server-side; Intro/Outro prompt by default, Recap is seeded per user. */
+.skip-button {
+  margin-left: 2.2em; margin-right: auto;
+  border-radius: 999px !important;
+  background: rgba(15, 15, 18, .85);
+  border: 1px solid rgba(255, 255, 255, .4);
+  backdrop-filter: blur(6px);
+  font-weight: 600;
+  padding: .55em 1.4em;
+}
+html.layout-tv .skip-button-container { bottom: 11em; }
+html.layout-tv .skip-button { font-size: 1.5em; margin-left: 1.8em; }
