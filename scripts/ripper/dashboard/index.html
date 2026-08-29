@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rip Status</title>
+  <style>
+    :root { color-scheme: dark; --bg:#090d14; --card:#121925; --line:#263143; --muted:#91a0b5; --text:#f1f5fb; --green:#36d47d; --blue:#3b9cff; --gray:#556274; --red:#ff667a; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:15px/1.4 system-ui,-apple-system,sans-serif; }
+    main { width:min(760px,100%); margin:auto; padding:14px; }
+    h1,h2,p { margin:0; } h1 { font-size:clamp(20px,6vw,30px); } h2 { font-size:16px; margin-bottom:10px; }
+    section,.card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:12px; }
+    .hero-number { font-size:clamp(27px,9vw,44px); font-weight:800; margin-top:8px; letter-spacing:-1px; }
+    .subtle,.meta { color:var(--muted); } .meta { font-size:13px; }
+    .bar { height:10px; background:#273142; border-radius:999px; overflow:hidden; margin:9px 0 5px; }
+    .bar > span { display:block; height:100%; background:linear-gradient(90deg,var(--blue),var(--green)); border-radius:inherit; transition:width .35s; }
+    .rip-card { margin:0 0 9px; background:#172234; }
+    .rip-title { font-weight:750; font-size:17px; } .rip-stats { display:flex; gap:18px; margin-top:9px; color:var(--muted); }
+    .dots { display:flex; flex-wrap:wrap; gap:7px; margin:11px 0; }
+    .dot { width:12px; height:12px; border-radius:50%; background:var(--gray); }
+    .dot.done { background:var(--green); } .dot.current { background:var(--blue); animation:pulse 1.25s infinite; box-shadow:0 0 0 4px #3b9cff22; }
+    .swap { border-color:#36d47d88; background:#10281d; text-align:center; padding:22px 12px; animation:swap 1.8s infinite; }
+    .swap strong { display:block; color:#72efa9; font-size:18px; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .chip { border:1px solid var(--line); border-radius:999px; padding:8px 11px; background:#18202d; }
+    .chip.busy { border-color:var(--blue); color:#9dccff; } .chip.free { border-color:var(--green); color:#83efaf; } .chip.empty { color:var(--muted); }
+    .grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+    .tile { aspect-ratio:1.25; display:grid; place-items:center; border-radius:9px; background:#293241; color:#aab5c4; font-weight:750; }
+    .tile.done { background:#174d31; color:#70eea8; } .tile.ripping { background:#174776; color:#a9d5ff; animation:pulse 1.3s infinite; }
+    .row { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+    .current { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:8px; color:var(--muted); }
+    .failed { color:var(--red); }
+    .failed-list { margin-top:7px; overflow-wrap:anywhere; }
+    .queue-count { font-size:34px; font-weight:800; color:#f5c968; }
+    .events { list-style:none; padding:0; margin:0; }
+    .events li { display:grid; grid-template-columns:50px 1fr; gap:9px; padding:8px 0; border-top:1px solid var(--line); }
+    .events li:first-child { border-top:0; } time { color:var(--muted); font-variant-numeric:tabular-nums; }
+    #error { position:sticky; top:8px; z-index:2; display:none; background:#641f2b; border:1px solid var(--red); padding:10px; border-radius:10px; margin-bottom:10px; text-align:center; font-weight:700; }
+    .empty-note { color:var(--muted); }
+    @keyframes pulse { 50% { opacity:.5; } } @keyframes swap { 50% { box-shadow:0 0 22px #36d47d33; } }
+    @media (min-width:520px) { main { padding:22px; } .grid { grid-template-columns:repeat(10,1fr); } }
+  </style>
+</head>
+<body>
+  <main>
+    <div id="error">Server unreachable — retrying…</div>
+    <div id="app"><section><p class="empty-note">Loading rip status…</p></section></div>
+  </main>
+  <script>
+    const app = document.querySelector('#app');
+    const errorBanner = document.querySelector('#error');
+    const esc = (value) => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    const pct = (done, total) => total ? Math.min(100, Math.round(done / total * 100)) : 0;
+    const range = codes => {
+      if (!codes?.length) return '';
+      return codes.length === 1 ? codes[0] : `${codes[0]}–${codes.at(-1)}`;
+    };
+    const eventText = event => {
+      if (event.event === 'disc-done') {
+        const eps = event.eps || event.codes || [];
+        return `Disc ${event.disc} done${eps.length ? ` — ${range(eps)}` : ''}`;
+      }
+      if (event.event === 'disc-fail') return `Disc ${event.disc ?? '?'} failed — ${String(event.error || event.message || '').slice(0, 120)}`;
+      return String(event.message || event.event || 'event').replaceAll('-', ' ');
+    };
+    const eventTime = ts => {
+      const date = new Date(ts);
+      return Number.isNaN(date.valueOf()) ? '--:--' : date.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    };
+
+    function render(data) {
+      const s = data.series || {};
+      const rips = data.activeRips || [];
+      const running = rips.filter(rip => rip.active);
+      const voice = data.voiceLab || {};
+      const voiceTotal = (voice.doneCount || 0) + (voice.pendingCount || 0);
+      const transcription = data.transcription || {};
+      const recent = (data.recentEvents || []).slice(-10).reverse();
+      const ripCards = rips.map(rip => `
+        <div class="card rip-card">
+          <div class="rip-title">Disc ${esc(rip.disc)} — ${rip.active ? `ripping title ${esc(rip.currentTitle)} of ${esc(rip.titlesTotal)}` : 'stalled / idle staging files'}</div>
+          <div class="dots">${Array.from({length:rip.titlesTotal || 0}, (_, index) => `<i class="dot ${index < rip.titlesDone ? 'done' : index === rip.titlesDone && rip.active ? 'current' : ''}"></i>`).join('')}</div>
+          <div class="rip-stats"><span>${esc(rip.mbPerSec || 0)} MB/s</span><span>${esc(rip.currentFileMB || 0)} MB current file</span></div>
+        </div>`).join('');
+
+      app.innerHTML = `
+        <section>
+          <h1>${esc(s.name || 'Rip Status')}</h1>
+          <div class="hero-number">${esc(s.episodesDone || 0)} / ${esc(s.episodesTotal || 0)} episodes</div>
+          <div class="bar"><span style="width:${pct(s.episodesDone, s.episodesTotal)}%"></span></div>
+          <p class="subtle">${esc((s.discsDone || []).length)} / ${esc(s.discsTotal || 0)} discs</p>
+        </section>
+        <section>
+          <h2>Active rips</h2>
+          ${running.length ? '' : '<div class="card swap"><strong>Both drives idle</strong>Insert next disc</div>'}
+          ${ripCards}
+        </section>
+        <section>
+          <h2>Drives</h2>
+          <div class="chips">${(data.drives || []).map(drive => {
+            const state = drive.busy ? 'busy' : drive.hasMedia ? 'free' : 'no disc';
+            const cls = drive.busy ? 'busy' : drive.hasMedia ? 'free' : 'empty';
+            return `<span class="chip ${cls}">${esc(drive.name)} · ${state}</span>`;
+          }).join('') || '<span class="empty-note">No drive status</span>'}</div>
+        </section>
+        <section>
+          <h2>Discs</h2>
+          <div class="grid">${(data.discs || []).map(disc => `<div class="tile ${esc(disc.status)}" title="${esc(range(disc.codes))}">${esc(disc.disc)}</div>`).join('')}</div>
+        </section>
+        <section>
+          <div class="row"><h2>Voice lab (Demucs)</h2><span class="meta">${voice.running ? 'Running' : 'Idle'}</span></div>
+          <p><strong>${esc(voice.doneCount || 0)}</strong> done · <strong>${esc(voice.pendingCount || 0)}</strong> pending</p>
+          <div class="bar"><span style="width:${pct(voice.doneCount, voiceTotal)}%"></span></div>
+          <p class="current" title="${esc(voice.current || '')}">${esc(voice.current || 'No active item')}</p>
+        </section>
+        <section>
+          <div class="row"><h2>Transcription (WhisperX)</h2><span class="meta">${transcription.running ? 'Running' : 'Idle'}</span></div>
+          <p><strong>${esc(transcription.doneCount || 0)}</strong> / <strong>${esc(transcription.eligibleCount || 0)}</strong> done · <strong>${esc(transcription.pendingCount || 0)}</strong> pending${transcription.failedCount > 0 ? ` · <strong class="failed">${esc(transcription.failedCount)} failed</strong>` : ''}</p>
+          <div class="bar"><span style="width:${pct(transcription.doneCount, transcription.eligibleCount)}%"></span></div>
+          ${!transcription.running && transcription.pendingCount > 0 ? '<p class="meta">Worker not running</p>' : ''}
+          <p class="current" title="${esc(transcription.current || '')}">${esc(transcription.current || 'No current activity')}</p>
+          ${transcription.failedCount > 0 ? `<p class="meta failed failed-list">${(transcription.failed || []).map(esc).join(' · ')}</p>` : ''}
+        </section>
+        <section>
+          <h2>Copy queue</h2>
+          <div class="queue-count">${esc(data.copyQueue || 0)}</div>
+          <p class="subtle">MKV files waiting to ship</p>
+        </section>
+        <section>
+          <h2>Recent events</h2>
+          <ul class="events">${recent.map(event => `<li><time>${esc(eventTime(event.ts))}</time><span>${esc(eventText(event))}</span></li>`).join('') || '<li class="empty-note">No recent events</li>'}</ul>
+        </section>`;
+    }
+
+    async function refresh() {
+      try {
+        const response = await fetch('/api/status', { cache:'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        render(await response.json());
+        errorBanner.style.display = 'none';
+      } catch {
+        errorBanner.style.display = 'block';
+      }
+    }
+    refresh();
+    setInterval(refresh, 5000);
+  </script>
+</body>
+</html>

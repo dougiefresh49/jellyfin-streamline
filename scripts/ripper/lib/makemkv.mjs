@@ -110,14 +110,19 @@ export function classifyTitles(titles, expectedEps) {
   return { mode: 'unknown', episodeTitleIds: [], playallId: null, extraIds: extras.map((t) => t.id) };
 }
 
-export async function eject(osDevice) {
+export async function eject(osDevice, driveName) {
   const drives = await enumerateDrives();
-  const target = drives.find((drive) => drive.osDevice === osDevice);
-  if (!target) throw new Error(`Cannot resolve optical device for eject: ${osDevice}`);
+  // Resolve by driveName first: /dev/diskN numbers are reassigned on media
+  // events, so a node captured at rip start can point at the OTHER physical
+  // drive by eject time (this ejected the Gotega mid-rip while the ASUS
+  // finished). The hardware name never moves.
+  const target = (driveName && drives.find((drive) => drive.driveName === driveName))
+    || drives.find((drive) => drive.osDevice === osDevice);
+  if (!target) throw new Error(`Cannot resolve optical device for eject: ${driveName ?? osDevice}`);
   // diskutil targets the exact BSD device; drutil's -drive N numbering does NOT
   // match MakeMKV's DRV ordering (it ejected the other drive in live testing).
   // /dev/rdiskN and /dev/diskN are interchangeable for diskutil.
-  const bsd = osDevice.replace('/dev/rdisk', '/dev/disk');
+  const bsd = target.osDevice.replace('/dev/rdisk', '/dev/disk');
   await run('diskutil', ['eject', bsd]);
   const after = await enumerateDrives();
   if (after.some((drive) => drive.osDevice === osDevice && drive.mediaPresent)) {
