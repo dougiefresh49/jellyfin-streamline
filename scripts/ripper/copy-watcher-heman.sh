@@ -18,7 +18,7 @@ VOICE_LAB="${VOICE_LAB:-$LOCAL_LIBRARY/voice-lab}"
 SHOW="He-Man and the Masters of the Universe (1983)"
 READY="$LOCAL_LIBRARY/ready-to-copy/$SHOW"
 DEST_ROOT="$MEDIA_ROOT/library/shows/$SHOW"
-VOICE_LAB="$VOICE_LAB/HeMan-1983"
+LAB_SHOW="$VOICE_LAB/HeMan-1983"
 QUEUE="$VOICE_LAB/queue/pending.txt"
 LOG="$LOCAL_LIBRARY/.ripper-heman/copy-watcher.log"
 

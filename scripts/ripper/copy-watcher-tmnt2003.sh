@@ -19,7 +19,7 @@ VOICE_LAB="${VOICE_LAB:-$LOCAL_LIBRARY/voice-lab}"
 SHOW="Teenage Mutant Ninja Turtles (2003)"
 READY="$LOCAL_LIBRARY/ready-to-copy/$SHOW"
 DEST_ROOT="$MEDIA_ROOT/library/shows/$SHOW"
-VOICE_LAB="$VOICE_LAB/TMNT-2003"
+LAB_SHOW="$VOICE_LAB/TMNT-2003"
 QUEUE="$VOICE_LAB/queue/pending.txt"
 LOG="$LOCAL_LIBRARY/.ripper-tmnt2003/copy-watcher.log"
 

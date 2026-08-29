@@ -18,7 +18,7 @@ VOICE_LAB="${VOICE_LAB:-$LOCAL_LIBRARY/voice-lab}"
 SHOW="Mighty Morphin Power Rangers (1993)"
 READY="$LOCAL_LIBRARY/ready-to-copy/$SHOW"
 DEST_ROOT="$MEDIA_ROOT/library/shows/$SHOW"
-VOICE_LAB="$VOICE_LAB/MMPR-1993"
+LAB_SHOW="$VOICE_LAB/MMPR-1993"
 QUEUE="$VOICE_LAB/queue/pending.txt"
 LOG="$LOCAL_LIBRARY/.ripper-mmpr/copy-watcher.log"
 
