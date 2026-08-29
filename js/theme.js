@@ -2,7 +2,7 @@
  * Route-scoped hijack of Home, Series, and Movie views. Renders custom Netflix/Disney+-style
  * show->seasons->episodes and movie views from the Jellyfin REST API (via window.ApiClient).
  * Playback delegates to Jellyfin's native controls (playbackManager is a module export, not global):
- *   - series Play  -> click the native .btnPlay (data-action="resume") on the series page
+ *   - series Play  -> resolve the user's actual latest episode, then play that episode
  *   - an episode   -> navigate to its detail hash, then click that page's native play control
  * Verified against live Jellyfin 10.11 markup: primary=.btnPlay[data-action=resume],
  *   from-start=.btnReplay[data-action=play] (hidden), overflow=.btnMoreCommands.
@@ -778,7 +778,7 @@
     }
     var resume = !featured;
     var primary = el('button', { className: 'sl-home-primary', type: 'button', text: resume ? '▶  Resume' : '▶  Play' });
-    primary.addEventListener('click', function () { if (validHome(myGen, uid, root, page)) { captureHomeState(); playItem(item.Id); } });
+    primary.addEventListener('click', function () { if (validHome(myGen, uid, root, page)) { captureHomeState(); playResolvedItem(item, uid); } });
     var details = el('button', { className: 'sl-home-secondary', type: 'button', text: 'ⓘ  Details' });
     details.addEventListener('click', function () { if (validHome(myGen, uid, root, page)) navigateDetails(item); });
     hero.appendChild(el('div', { className: 'sl-home-hero-copy' }, [
@@ -793,10 +793,63 @@
   function settled(promise) {
     return promise.then(function (value) { return { ok: true, value: value }; }, function () { return { ok: false, value: null }; });
   }
+  function lastPlayedTime(item) {
+    var ud = (item && item.UserData) || {};
+    var value = ud.LastPlayedDate || ud.DatePlayed || item.DatePlayed || item.LastPlayedDate;
+    var time = value ? Date.parse(value) : 0;
+    return isNaN(time) ? 0 : time;
+  }
+  function seriesContinueItem(items) {
+    var episodes = (items || []).filter(function (episode) { return episode && episode.Id; })
+      .map(function (episode, index) { return { episode: episode, index: index }; })
+      .sort(function (a, b) {
+        var season = (a.episode.ParentIndexNumber || 0) - (b.episode.ParentIndexNumber || 0);
+        var number = (a.episode.IndexNumber || 0) - (b.episode.IndexNumber || 0);
+        return season || number || a.index - b.index;
+      }).map(function (entry) { return entry.episode; });
+    var recent = null;
+    episodes.forEach(function (episode) {
+      var ud = episode.UserData || {};
+      if (!(ud.PlaybackPositionTicks > 0 || ud.Played)) return;
+      if (!recent || lastPlayedTime(episode) > lastPlayedTime(recent) ||
+          (!lastPlayedTime(episode) && !lastPlayedTime(recent))) recent = episode;
+    });
+    if (recent) {
+      var recentData = recent.UserData || {};
+      if (recentData.PlaybackPositionTicks > 0 && !recentData.Played) return recent;
+      var next = episodes[episodes.indexOf(recent) + 1];
+      if (next) return next;
+    }
+    for (var i = 0; i < episodes.length; i++) {
+      if (!((episodes[i].UserData || {}).Played)) return episodes[i];
+    }
+    return null;
+  }
+  function seriesContinueItemFor(seriesId, uid) {
+    return api().getEpisodes(seriesId, { userId: uid, Fields: 'Overview,RunTimeTicks' })
+      .then(function (result) { return seriesContinueItem((result && result.Items) || []); });
+  }
+  function playSeriesContinue(seriesId, uid, resolvedItem) {
+    (resolvedItem || seriesContinueItemFor(seriesId, uid)).then(function (episode) {
+      if (episode) playItem(episode.Id);
+    }).catch(function () {});
+  }
+  function playResolvedItem(item, uid) {
+    if (!item || !item.Id) return;
+    if (item.Type !== 'Series') { playItem(item.Id); return; }
+    playSeriesContinue(item.Id, uid);
+  }
   function mergeContinue(resume, next) {
+    var latestBySeries = {};
+    resume.forEach(function (item) {
+      if (!item || item.Type !== 'Episode' || !item.SeriesId) return;
+      var current = latestBySeries[item.SeriesId];
+      if (!current || lastPlayedTime(item) > lastPlayedTime(current)) latestBySeries[item.SeriesId] = item;
+    });
     var represented = {}; var seen = {}; var merged = [];
     resume.forEach(function (item) {
       if (!item || !item.Id || seen[item.Id]) return;
+      if (item.Type === 'Episode' && item.SeriesId && latestBySeries[item.SeriesId] !== item) return;
       seen[item.Id] = true; merged.push(item);
       if (item.Type === 'Episode' && item.SeriesId) represented[item.SeriesId] = true;
     });
@@ -1060,18 +1113,19 @@
     root.appendChild(metaLine(item));
 
     var play = el('button', { className: 'sl-play', type: 'button', disabled: true }, [el('span', { text: '▶  Play' })]);
-    play.addEventListener('click', function () { nativeDetailPlay(page); });
+    var continueItem = seriesContinueItemFor(item.Id, uid);
+    play.addEventListener('click', function () { playSeriesContinue(item.Id, uid, continueItem); });
     var trailer = trailerButton(page);
-    // enable Play only once the native control is present (avoids clicking an unbound/hidden button)
     var trailerResolved = false;
     (function waitReady(t) {
       if (myGen !== gen) return;
-      if (page.querySelector('.mainDetailButtons .btnPlay:not(.hide)')) play.disabled = false;
       if (page.querySelector('.mainDetailButtons .btnPlayTrailer:not(.hide)')) { trailer.hidden = false; trailerResolved = true; }
       if (!trailerResolved && (t || 0) >= 8) trailerResolved = true;
-      if ((t || 0) < 25 && (play.disabled || !trailerResolved)) scheduleTimeout(function () { waitReady((t || 0) + 1); }, 120);
-      else if (play.disabled) play.disabled = false;
+      if ((t || 0) < 25 && !trailerResolved) scheduleTimeout(function () { waitReady((t || 0) + 1); }, 120);
     })();
+    continueItem.then(function (episode) {
+      if (myGen === gen && episode) play.disabled = false;
+    }).catch(function () {});
     var fav = el('button', { className: 'sl-icon-btn', type: 'button', 'aria-pressed': String(!!(item.UserData || {}).IsFavorite), 'aria-label': 'Favorite', text: '♥' });
     fav.addEventListener('click', function () {
       var on = fav.getAttribute('aria-pressed') === 'true';
@@ -1100,11 +1154,13 @@
     page.appendChild(root);
     mounted = { el: root, page: page, pagePrevPosition: prevPos };
 
-    // Next Up / continue
-    api().getNextUpEpisodes({ SeriesId: item.Id, UserId: uid, Fields: 'Overview', Limit: 1 })
-      .then(function (r) {
+    // Build this from the user's actual last playback event. Jellyfin's NextUp
+    // endpoint advances from the last fully played episode, which can skip past
+    // a more recently resumed (or rewatched) earlier episode.
+    continueItem
+      .then(function (episode) {
         if (myGen !== gen) return;
-        var res = continueCard((r.Items || [])[0]);
+        var res = continueCard(episode);
         if (res) { contSection.appendChild(el('h2', { text: res.inProgress ? 'Continue watching' : 'Next up' })); contSection.appendChild(res.card); }
       }).catch(function () {});
 

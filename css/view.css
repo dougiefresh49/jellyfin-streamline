@@ -3,8 +3,10 @@
  * Accent is a variable — owner did not commit to lime; default is a friendly violet-blue. */
 
 /* Jellyfin 10.11's iPad layout paints these above the page-local overlay. Keep the native
- * controls in the DOM (without Jellyfin's .hide class) for playback and overflow delegation. */
-body.streamline-series-active .skinHeader,
+ * controls in the DOM (without Jellyfin's .hide class) for playback and overflow delegation.
+ * :not(.osdHeader) is required -- during video playback jellyfin reuses the same .skinHeader
+ * as the OSD top chrome (back + setTitle), so a blanket hide kills the player header. */
+body.streamline-series-active .skinHeader:not(.osdHeader),
 body.streamline-series-active #itemDetailPage:not(.hide) > .detailPageWrapperContainer > .detailPagePrimaryContainer > .detailRibbon {
   display: none !important;
 }
@@ -120,7 +122,7 @@ body.streamline-series-active #itemDetailPage:not(.hide) > .detailPageWrapperCon
 #streamline-detail .sl-status { padding: 40px 16px; text-align: center; color: var(--sl-dim); }
 
 /* ---- Home: quiet chrome, cinematic resume billboard, edge-to-edge rails ---- */
-body.streamline-home-active .skinHeader,
+body.streamline-home-active .skinHeader:not(.osdHeader),
 body.streamline-home-active #indexPage.homePage:not(.hide) > #homeTab,
 body.streamline-home-active #indexPage.homePage:not(.hide) > #favoritesTab {
   display: none !important;
@@ -540,6 +542,65 @@ html.layout-tv #streamline-detail { position: fixed; }
    Cascade note: the player's own chunk CSS is lazy-loaded AFTER this sheet, and
    the Ultrachromic base theme also competes, so several rules below carry extra
    specificity or !important on purpose -- lower-key versions verified to lose. */
+
+/* ---- OSD top bar (stock .skinHeader.osdHeader) ---- */
+/* Stock already owns show/hide (osdHeader-hidden + .hide), setTitle ("Series -
+   S2:E7 - Episode" / movie name), and headerBackButton -> appRouter.back() which
+   stops playback. We only unhide it (see :not(.osdHeader) above) and nudge the
+   look toward Prime: left-aligned back + title over a top scrim, safe-area aware,
+   no hit-testing while faded so taps still toggle play/pause. */
+.skinHeader.osdHeader {
+  /* Stock flips this to position:relative; keep it pinned over the video. */
+  position: fixed !important;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  height: auto;
+  min-height: calc(3.5em + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  background: linear-gradient(180deg, rgba(0, 0, 0, .72) 0%, rgba(0, 0, 0, .35) 55%, rgba(0, 0, 0, 0) 100%) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  pointer-events: none;
+  transition: opacity .3s ease-out;
+}
+.skinHeader.osdHeader .headerTop {
+  max-height: none;
+  padding: .55em .7em .9em;
+  pointer-events: all;
+}
+.skinHeader.osdHeader .headerLeft {
+  min-width: 0; /* allow title ellipsis inside flex */
+  align-items: center;
+}
+.skinHeader.osdHeader .headerBackButton {
+  flex-shrink: 0;
+  color: #fff;
+}
+.skinHeader.osdHeader .headerBackButton .material-icons { font-size: 1.65em; }
+.skinHeader.osdHeader .pageTitle {
+  color: #fff;
+  font-size: 1.05em;
+  font-weight: 600;
+  line-height: 1.25;
+  height: auto;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .65);
+  margin-left: .15em;
+}
+/* While opacity-faded (before .hide lands on transitionend), kill hit-testing on
+   the interactive headerTop so mid-video taps still reach play/pause. */
+.skinHeader.osdHeader.osdHeader-hidden,
+.skinHeader.osdHeader.osdHeader-hidden .headerTop { pointer-events: none !important; }
+
+html.layout-tv .skinHeader.osdHeader .headerTop { padding: .8em 1.1em 1.1em; }
+html.layout-tv .skinHeader.osdHeader .pageTitle { font-size: 1.35em; }
+html.layout-tv .skinHeader.osdHeader .headerBackButton .material-icons { font-size: 2em; }
 
 .videoOsdBottom .btnPreviousChapter,
 .videoOsdBottom .btnNextChapter,
