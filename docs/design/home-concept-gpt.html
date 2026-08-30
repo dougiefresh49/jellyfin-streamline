@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0b0d">
+  <title>Jellyfin Streamline — Home Concept</title>
+  <style>
+    :root {
+      --bg: #0b0b0d;
+      --card: #16161a;
+      --text: #f4f4f6;
+      --muted: #a8a8b3;
+      --accent: #7c5cff;
+      --accent-ink: #0a0713;
+      --radius: 16px;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: #09090b; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% -14rem, rgba(124,92,255,.18), transparent 30rem),
+        #09090b;
+      font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .concept-label {
+      width: min(100% - 32px, 920px);
+      margin: 28px auto 14px;
+    }
+    .concept-label small {
+      color: #a99aff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .concept-label h1 {
+      margin: 5px 0 0;
+      font-size: clamp(20px, 3vw, 26px);
+      letter-spacing: -.035em;
+    }
+
+    .device {
+      width: min(100%, 920px);
+      min-height: 820px;
+      margin: 0 auto 48px;
+      overflow: hidden;
+      position: relative;
+      background: var(--bg);
+      border-radius: 30px;
+      box-shadow: 0 28px 90px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.09);
+    }
+
+    /* The top bar stays quiet so artwork and unfinished playback remain the primary wayfinding. */
+    .topbar {
+      height: 72px;
+      padding: max(12px, env(safe-area-inset-top)) 20px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 5;
+      background: linear-gradient(180deg, rgba(11,11,13,.96), rgba(11,11,13,.72) 72%, transparent);
+    }
+    .wordmark {
+      margin-right: auto;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 18px;
+      font-weight: 780;
+      letter-spacing: -.035em;
+    }
+    .mark {
+      width: 19px;
+      height: 22px;
+      background: linear-gradient(145deg, #a897ff, var(--accent));
+      clip-path: polygon(50% 0, 100% 100%, 72% 100%, 50% 53%, 28% 100%, 0 100%);
+      filter: drop-shadow(0 3px 10px rgba(124,92,255,.45));
+    }
+    .icon-button, .avatar {
+      width: 44px;
+      height: 44px;
+      flex: 0 0 44px;
+      border: 0;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .icon-button { background: #1b1b20; }
+    .icon-button svg { width: 20px; fill: none; stroke: currentColor; stroke-width: 2; }
+    .avatar {
+      background: linear-gradient(145deg, #b6aaff 0 46%, #4d35c7 47%);
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.15);
+    }
+
+    /* Billboard is optional in product; here it earns its space by doubling as a one-tap resume surface. */
+    .hero {
+      min-height: clamp(340px, 52vw, 470px);
+      margin-top: -72px;
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(8,8,11,.92) 0%, rgba(8,8,11,.55) 43%, rgba(8,8,11,.08) 78%),
+        linear-gradient(180deg, rgba(11,11,13,.08) 42%, var(--bg) 100%),
+        radial-gradient(circle at 74% 36%, rgba(223,203,255,.8) 0 2%, transparent 3%),
+        radial-gradient(ellipse at 75% 41%, rgba(76,48,153,.76), transparent 23%),
+        linear-gradient(126deg, #10101b 16%, #292053 52%, #7b4c79 100%);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 38%;
+      aspect-ratio: .78;
+      right: 8%;
+      top: 19%;
+      border-radius: 47% 47% 20% 20%;
+      background:
+        radial-gradient(circle at 34% 31%, #d9c7ef 0 3%, transparent 3.5%),
+        radial-gradient(circle at 66% 31%, #d9c7ef 0 3%, transparent 3.5%),
+        linear-gradient(155deg, transparent 0 19%, #12121a 20% 62%, #2e214a 63%);
+      clip-path: polygon(28% 0, 50% 15%, 73% 0, 90% 37%, 77% 100%, 24% 100%, 9% 37%);
+      opacity: .88;
+      filter: drop-shadow(0 18px 28px rgba(0,0,0,.45));
+    }
+    .hero-copy {
+      width: min(500px, 68%);
+      padding: 128px 24px 56px;
+      position: relative;
+      z-index: 2;
+    }
+    .kicker {
+      color: #b8adff;
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .hero h2 {
+      margin: 7px 0 8px;
+      font-size: clamp(38px, 7vw, 61px);
+      line-height: .92;
+      letter-spacing: -.065em;
+      text-shadow: 0 8px 30px #000;
+    }
+    .hero-meta { color: #dddce4; font-size: 13px; font-weight: 620; }
+    .hero-summary {
+      max-width: 440px;
+      margin: 10px 0 16px;
+      color: #c5c3ce;
+      font-size: 14px;
+    }
+    .hero-actions { display: flex; gap: 10px; }
+    .primary, .secondary {
+      min-height: 48px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 750;
+    }
+    .primary { color: var(--accent-ink); background: var(--accent); box-shadow: 0 8px 24px rgba(124,92,255,.28); }
+    .secondary { background: rgba(31,31,38,.82); backdrop-filter: blur(12px); }
+
+    .feed { margin-top: -22px; padding: 0 0 42px; position: relative; z-index: 3; }
+    .section { padding-top: 22px; }
+    .section-head {
+      padding: 0 20px;
+      margin-bottom: 11px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .section-head h2 { margin: 0; font-size: 20px; letter-spacing: -.025em; }
+    .section-head a { min-height: 44px; display: flex; align-items: center; color: var(--muted); font-size: 13px; text-decoration: none; }
+
+    /* Edge-to-edge rails reveal the next card, making horizontal scroll obvious without folder chrome. */
+    .rail {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+      padding: 0 20px 8px;
+    }
+    .rail::-webkit-scrollbar { display: none; }
+    .card {
+      border: 0;
+      padding: 0;
+      flex: 0 0 auto;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      scroll-snap-align: start;
+    }
+    .landscape { width: clamp(244px, 37vw, 310px); }
+    .poster-card { width: clamp(128px, 18vw, 154px); }
+    .art {
+      overflow: hidden;
+      position: relative;
+      background: var(--card);
+      box-shadow: 0 10px 25px rgba(0,0,0,.22);
+    }
+    .landscape .art { aspect-ratio: 16 / 9; border-radius: var(--radius); }
+    .poster-card .art { aspect-ratio: 2 / 3; border-radius: var(--radius); }
+    .art::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 54%, rgba(0,0,0,.42));
+    }
+    .art-a { background: radial-gradient(circle at 70% 24%, #ffcab5 0 7%, transparent 8%), linear-gradient(135deg, #183244, #6d365f 55%, #e28c65); }
+    .art-b { background: radial-gradient(circle at 42% 42%, #a7e9ff 0 8%, transparent 9%), linear-gradient(155deg, #122338, #235d72 47%, #071016 48% 70%, #d76e3f); }
+    .art-c { background: linear-gradient(28deg, transparent 0 43%, rgba(255,255,255,.42) 44% 46%, transparent 47%), radial-gradient(circle at 70% 30%, #efdeff, #55419c 12%, transparent 13%), linear-gradient(145deg, #24174c, #7b417b 56%, #15101e); }
+    .art-d { background: radial-gradient(circle at 28% 24%, #ffe2a8 0 7%, transparent 8%), linear-gradient(160deg, #744421, #d79b55 43%, #17282e 44%); }
+    .art-e { background: linear-gradient(62deg, transparent 44%, #c8eaf2 45% 48%, transparent 49%), linear-gradient(145deg, #13202c, #31526c 55%, #080b0e); }
+    .art-f { background: radial-gradient(circle at 72% 20%, #ffadb5 0 5%, transparent 6%), linear-gradient(140deg, #501d38, #a3445d 49%, #17131f 50%); }
+    .art-g { background: radial-gradient(ellipse at 50% 72%, #b5def0 0 11%, transparent 12%), linear-gradient(160deg, #10243b, #32718f 50%, #050b10); }
+    .art-h { background: linear-gradient(35deg, #241840 0 42%, #a377ca 43% 47%, #15111d 48% 100%); }
+    .art-i { background: radial-gradient(circle at 30% 26%, #fff0b7 0 6%, transparent 7%), linear-gradient(150deg, #5a3820, #c47645 48%, #211314 49%); }
+    .art-j { background: radial-gradient(circle at 76% 32%, #a4e5cf 0 8%, transparent 9%), linear-gradient(145deg, #123831, #32786b 47%, #0b1718 48%); }
+    .play-chip {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      padding-left: 2px;
+      color: #101014;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 4px 16px rgba(0,0,0,.3);
+      font-size: 13px;
+    }
+    .progress {
+      height: 4px;
+      position: absolute;
+      inset: auto 0 0;
+      z-index: 3;
+      background: rgba(255,255,255,.27);
+    }
+    .progress i { display: block; height: 100%; background: var(--accent); }
+    .card-title {
+      margin-top: 8px;
+      overflow: hidden;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 14px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .card-sub { margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .poster-card .card-title { margin-top: 9px; }
+
+    @media (max-width: 560px) {
+      .concept-label { margin-top: 18px; }
+      .device { width: min(100%, 412px); min-height: 100vh; margin-bottom: 0; border-radius: 0; box-shadow: none; }
+      .topbar { padding-left: 16px; padding-right: 16px; }
+      .wordmark span:last-child { font-size: 17px; }
+      .hero { min-height: 430px; }
+      .hero::before { width: 58%; right: -9%; top: 19%; }
+      .hero-copy { width: 78%; padding: 126px 16px 62px; }
+      .hero h2 { font-size: 42px; }
+      .hero-summary { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .section-head { padding: 0 16px; }
+      .rail { padding-left: 16px; padding-right: 16px; }
+      .landscape { width: 252px; }
+      .poster-card { width: 132px; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .card .art { transition: transform .18s ease, filter .18s ease; }
+      .card:active .art { transform: scale(.98); filter: brightness(.9); }
+    }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+  <header class="concept-label">
+    <small>Jellyfin Streamline Concept</small>
+    <h1>Home is where the next story starts.</h1>
+  </header>
+
+  <main class="device" aria-label="Jellyfin Streamline home page concept">
+    <nav class="topbar" aria-label="Primary navigation">
+      <div class="wordmark" aria-label="Streamline home"><span class="mark" aria-hidden="true"></span><span>Streamline</span></div>
+      <button class="icon-button" aria-label="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16.2 16.2 4 4"></path></svg>
+      </button>
+      <button class="avatar" aria-label="Open profile for D">D</button>
+    </nav>
+
+    <section class="hero" aria-labelledby="featured-title">
+      <div class="hero-copy">
+        <div class="kicker">Continue watching</div>
+        <h2 id="featured-title">Arcane</h2>
+        <div class="hero-meta">S1:E3 · 12 min left</div>
+        <p class="hero-summary">Two sisters find themselves on opposite sides of a growing conflict between Piltover and the undercity.</p>
+        <div class="hero-actions">
+          <button class="primary"><span aria-hidden="true">▶</span> Resume</button>
+          <button class="secondary"><span aria-hidden="true">ⓘ</span> Details</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="feed">
+      <section class="section" aria-labelledby="continue-title">
+        <div class="section-head"><h2 id="continue-title">Continue Watching</h2><a href="#">See all</a></div>
+        <div class="rail" aria-label="Continue Watching titles">
+          <button class="card landscape">
+            <div class="art art-a"><span class="play-chip">▶</span><span class="progress"><i style="width: 46%"></i></span></div>
+            <div class="card-title">The Last Kingdom</div><div class="card-sub">S1:E3 · 12 min left</div>
+          </button>
+          <button class="card landscape">
+            <div class="art art-b"><span class="play-chip">▶</span><span class="progress"><i style="width: 71%"></i></span></div>
+            <div class="card-title">Severance</div><div class="card-sub">S2:E6 · 18 min left</div>
+          </button>
+          <button class="card landscape">
+            <div class="art art-c"><span class="play-chip">▶</span><span class="progress"><i style="width: 28%"></i></span></div>
+            <div class="card-title">Dune: Part Two</div><div class="card-sub">1 hr 59 min left</div>
+          </button>
+        </div>
+      </section>
+
+      <!-- Content-type rails replace library folders: people browse recognizable covers, not server structure. -->
+      <section class="section" aria-labelledby="shows-title">
+        <div class="section-head"><h2 id="shows-title">Shows</h2><a href="#">See all</a></div>
+        <div class="rail" aria-label="Shows">
+          <button class="card poster-card"><div class="art art-d"></div><div class="card-title">Fallout</div><div class="card-sub">1 season</div></button>
+          <button class="card poster-card"><div class="art art-e"></div><div class="card-title">Shōgun</div><div class="card-sub">2 seasons</div></button>
+          <button class="card poster-card"><div class="art art-f"></div><div class="card-title">The Bear</div><div class="card-sub">3 seasons</div></button>
+          <button class="card poster-card"><div class="art art-g"></div><div class="card-title">Foundation</div><div class="card-sub">2 seasons</div></button>
+          <button class="card poster-card"><div class="art art-h"></div><div class="card-title">Andor</div><div class="card-sub">2 seasons</div></button>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="movies-title">
+        <div class="section-head"><h2 id="movies-title">Movies</h2><a href="#">See all</a></div>
+        <div class="rail" aria-label="Movies">
+          <button class="card poster-card"><div class="art art-c"></div><div class="card-title">Dune: Part Two</div><div class="card-sub">2024 · 2h 46m</div></button>
+          <button class="card poster-card"><div class="art art-i"></div><div class="card-title">Oppenheimer</div><div class="card-sub">2023 · 3h 1m</div></button>
+          <button class="card poster-card"><div class="art art-j"></div><div class="card-title">The Creator</div><div class="card-sub">2023 · 2h 13m</div></button>
+          <button class="card poster-card"><div class="art art-a"></div><div class="card-title">Civil War</div><div class="card-sub">2024 · 1h 49m</div></button>
+          <button class="card poster-card"><div class="art art-b"></div><div class="card-title">Arrival</div><div class="card-sub">2016 · 1h 56m</div></button>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

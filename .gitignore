@@ -1,2 +1,12 @@
 .DS_Store
 *.log
+.env
+node_modules/
+
+# Private infrastructure notes: real LAN/tailnet addresses, host details and
+# network topology. Keep out of a public repo.
+docs/media-server-notes.md
+
+# Operational internals of THIS deployment: server/user ids and the local
+# admin-token extraction recipe. Not for a public repo.
+docs/verification-recipe.md

@@ -1,13 +1,15 @@
-# Jellyfin Kids Theme
+# Streamline — a Jellyfin theme
 
-Custom kid-friendly UI for our self-hosted **Jellyfin** (v10.11) media server, delivered as
-**injected JavaScript + CSS**. It transforms the stock TV-show detail page into a modern,
+Modern streaming-style UI for our self-hosted **Jellyfin** (v10.11) media server, delivered as
+**injected JavaScript + CSS**. It transforms the stock TV-show detail page into a
 Netflix/Disney+-style combined show → seasons → episodes view. Viewed in the Jellyfin mobile
-app (a webview) on the kids' tablets.
+app (a webview) on tablets/phones.
 
-**Status: POC WORKING** (2026-07-18). Verified live via DevTools injection against the real
-server. Owner approved the look ("looks really good, not childish, buttons big enough for
-grown-up fingers"). Production delivery not yet built — see [Where we are](#where-we-are).
+**Status: DEPLOYED** (2026-07-19). Served automatically by the live server via a custom
+web-dir (`scripts/webdir/`, see `docs/delivery.md`) — no manual injection. Owner approved the
+look. Per-user accent color is choosable in the user's Display settings. Verified on an iPad
+Pro 11" viewport; real-phone check by the owner is the remaining step — see
+[Where we are](#where-we-are).
 
 ## Why injected JS+CSS (not a plugin, not just CSS)
 - **Jellyfin plugins** are server-side .NET — they cannot touch the web UI. Wrong tool.
@@ -32,7 +34,7 @@ Also in `docs/design/`: `grok-concept.html` (the cleaner Netflix-clone alt, not 
 ## Architecture
 Targeted **route hijack** of the **series** detail route only (`#/details?id=<seriesId>`):
 - `js/theme.js` watches the SPA hash, and when a *Series* detail route is shown, renders our
-  own `#kids-detail` view (styled by `css/view.css`) into the native `#itemDetailPage`,
+  own `#streamline-detail` view (styled by `css/view.css`) into the native `#itemDetailPage`,
   covering it. Data comes from `window.ApiClient` (getItem / getSeasons / getEpisodes /
   getNextUpEpisodes / getImageUrl).
 - **Playback delegates to Jellyfin's native controls** (its `playbackManager` is a module
@@ -40,7 +42,7 @@ Targeted **route hijack** of the **series** detail route only (`#/details?id=<se
   `.btnPlay`; an episode navigates to its detail hash and clicks that page's native play.
 - Everything else (home, library grids, search, the video player, season/episode detail
   pages) stays **stock**. Lifecycle is route-keyed with a versioned global sentinel
-  (`window.__kidsTheme`) so re-injection disposes the prior instance.
+  (`window.__streamlineTheme`) so re-injection disposes the prior instance.
 
 See `specs/show-detail-transform.md` for the full spec and `docs/jellyfin-10.11-notes.md` for
 the hard-won DOM/API facts (verified against live 10.11 markup).
@@ -48,35 +50,38 @@ the hard-won DOM/API facts (verified against live 10.11 markup).
 ## Repo layout
 ```
 css/theme.css     branding-box CSS (Ultrachromic import + hide/clamp) — styles STOCK Jellyfin
-css/view.css      styles ONLY the injected #kids-detail custom view
+css/view.css      styles ONLY the injected #streamline-detail custom view
 js/theme.js       the route-hijack + custom render (v2)
-specs/            implementation spec
+specs/            implementation specs (detail transform, webdir delivery, accent preference)
 docs/design/      approved concept + alternates + brief
-docs/reviews/     gpt spec review + grok implementation review
-docs/verification-recipe.md   how to reproduce the live POC (login inject, http server, screenshot)
+docs/reviews/     gpt spec reviews + grok implementation reviews
+docs/delivery.md  how production delivery works + upgrade/caching/TCC notes
+docs/verification-recipe.md   how to verify against the live server (login inject, screenshot)
 docs/jellyfin-10.11-notes.md  DOM selectors, ApiClient facts, gotchas
-scripts/          (reserved for the production inject/delivery scripts — not built yet)
+scripts/webdir/   build-webdir.sh (webdir copy + tag injection), launcher, LaunchAgent template
+scripts/ripping/  DVD-rip renaming helpers (rename_show.sh, courage_titles.txt)
+scripts/ripper/   two-drive automated TMNT ripping pipeline (see specs/ripper-pipeline.md)
 ```
 
 ## Where we are
-DONE: spec → gpt spec-review (7 must-fixes) → implement → grok implementation-review (P0 bugs
-found) → fixes applied & re-verified (incl. Play delegation spied and confirmed) → owner
-approved screenshot.
+DONE (as of 2026-07-19):
+1. **Production delivery LIVE** — custom web-dir at
+   `~/Library/Application Support/jellyfin/streamline-web/`, built by
+   `scripts/webdir/build-webdir.sh` (hashed asset names beat the service-worker cache; tags
+   injected with marker comments; idempotent). Server runs with `--webdir` pointing at it.
+   Re-run the build script after editing theme files or upgrading Jellyfin (`docs/delivery.md`).
+2. **Per-user accent color** — 6 presets, picker injected into the user's Display settings
+   (`#/mypreferencesdisplay`), stored server-side in DisplayPreferences CustomPrefs
+   (`streamlineAccent`), localStorage mirror for instant paint. Spec-reviewed by gpt (11
+   must-fixes applied), implementation-reviewed by grok (P0 + fixes applied, see docs/reviews/).
+3. **Verified on iPad Pro 11" viewport** (gpt computer-use): auto-delivery, layout, play
+   delegation, accent persistence incl. native-Save reconciliation, route cleanup.
 
-NOT DONE (next session):
-1. **Production delivery — the blocker.** The POC is injected via DevTools; that proves the
-   *code*, not the *deployment*. The bundled `index.html`
-   (`/Applications/Jellyfin.app/Contents/Resources/jellyfin-web/index.html`) is **macOS
-   App-Management-protected** (can't edit in place). Pick + build one of:
-   custom web-dir copy (point Jellyfin at a writable copy with our tags baked in) OR a
-   reverse proxy that injects `<script src>`/`<link>`. Both survive Jellyfin updates.
-   (gpt flagged: inline injection may hit CSP; use external assets; version them; watch the
-   service worker cache.)
+NOT DONE:
+1. **Owner phone check** in the real mobile app webview (emulated iPad ≠ real device).
 2. Only the **Series** page is transformed; season/episode pages stay native (intentional).
-3. **Test in the real mobile app webview** (POC ran in desktop-UA headless Chrome forced narrow).
-4. **Pick an accent color** — currently a placeholder violet (`--kd-accent` in `view.css`).
-5. Optional polish from grok's review (docs/reviews): AbortController for in-flight fetches,
-   `viewshow`/`viewhide` events vs hash-only, per-season episode caching.
+3. Optional polish from grok's original review: AbortController for in-flight fetches,
+   per-season episode caching.
 
 ## How we work on this (multi-agent pipeline)
 Claude specs → **gpt** (codex, Sol tier) reviews the spec → Claude implements → **grok**

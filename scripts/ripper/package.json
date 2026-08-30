@@ -1,0 +1,14 @@
+{
+  "name": "ripper",
+  "private": true,
+  "type": "module",
+  "description": "Two-drive DVD ripping pipeline: box-scan OCR -> makemkvcon -> Slack",
+  "scripts": {
+    "doctor": "node ripper.mjs doctor",
+    "watch": "node ripper.mjs watch"
+  },
+  "dependencies": {
+    "@google/genai": "^1.9.0",
+    "dotenv": "^16.4.5"
+  }
+}
